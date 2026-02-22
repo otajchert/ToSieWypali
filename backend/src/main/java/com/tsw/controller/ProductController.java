@@ -2,26 +2,29 @@ package com.tsw.controller;
 
 import com.tsw.model.Product;
 import com.tsw.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "http://localhost:3000")
 public class ProductController {
-    
-    @Autowired
-    private ProductRepository productRepository;
-    
+
+    private final ProductRepository productRepository;
+
+    public ProductController(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
+
+    // GET all products
     @GetMapping
-    public List<Product> getAllProducts() {
+    public List<Product> getAll() {
         return productRepository.findAll();
     }
-    
+
+    // GET product by id
     @GetMapping("/{id}")
-    public Product getProduct(@PathVariable Long id) {
+    public Product getById(@PathVariable UUID id) {
         return productRepository.findById(id).orElse(null);
     }
 }
