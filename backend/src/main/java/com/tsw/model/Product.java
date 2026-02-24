@@ -2,6 +2,8 @@ package com.tsw.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -31,9 +33,26 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(length = 100)
+    private String material;
+
+    @Column(length = 50)
+    private String height;
+
+    @Column(length = 50)
+    private String width;
+
+    // "length" is a MySQL reserved word
+    @Column(name = "product_length", length = 50)
+    private String productLength;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    private List<ProductImage> images = new ArrayList<>();
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
@@ -49,6 +68,16 @@ public class Product {
     public void setSku(String sku) { this.sku = sku; }
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
+    public String getMaterial() { return material; }
+    public void setMaterial(String material) { this.material = material; }
+    public String getHeight() { return height; }
+    public void setHeight(String height) { this.height = height; }
+    public String getWidth() { return width; }
+    public void setWidth(String width) { this.width = width; }
+    public String getProductLength() { return productLength; }
+    public void setProductLength(String productLength) { this.productLength = productLength; }
     public Category getCategory() { return category; }
     public void setCategory(Category category) { this.category = category; }
+    public List<ProductImage> getImages() { return images; }
+    public void setImages(List<ProductImage> images) { this.images = images; }
 }
