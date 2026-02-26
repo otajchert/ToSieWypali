@@ -1,0 +1,28 @@
+.workshops-page {
+    padding: 96px 24px;
+}
+
+.workshops-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.workshops-title {
+    font-family: 'Recoleta', serif;
+    font-size: 2.5rem;
+    color: #8b3a3a;
+    margin-bottom: 16px;
+}
+
+.workshops-desc {
+    color: #6b5a4e;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 40px;
+}
+
+.coming-soon {
+    color: #bbb;
+    font-size: 0.9rem;
+}

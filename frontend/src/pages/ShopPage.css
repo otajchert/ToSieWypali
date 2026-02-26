@@ -1,0 +1,101 @@
+.shop-page {
+    padding: 40px 24px;
+}
+
+.shop-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.shop-header {
+    margin-bottom: 32px;
+}
+
+.shop-title {
+    font-family: 'Recoleta', serif;
+    font-size: 2rem;
+    color: #8b3a3a;
+    margin-bottom: 4px;
+}
+
+.search-label {
+    color: #6b5a4e;
+    font-size: 0.95rem;
+    margin-top: 8px;
+}
+
+.product-count {
+    color: #999;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.product-card {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+}
+
+.product-photo {
+    aspect-ratio: 1;
+    background: #e8e0d8;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.product-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.no-photo {
+    width: 100%;
+    height: 100%;
+}
+
+.product-name {
+    font-size: 0.95rem;
+    color: #3a3a3a;
+    font-weight: 500;
+}
+
+.product-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #8b3a3a;
+}
+
+.status-text {
+    padding: 48px 0;
+    color: #888;
+}
+
+.status-text.error {
+    color: #c0392b;
+}
+
+@media (max-width: 1024px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

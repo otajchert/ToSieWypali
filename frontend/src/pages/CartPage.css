@@ -1,0 +1,44 @@
+.cart-page {
+    padding: 64px 24px;
+}
+
+.cart-inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.cart-title {
+    font-family: 'Recoleta', serif;
+    font-size: 2rem;
+    color: #8b3a3a;
+    margin-bottom: 40px;
+}
+
+.cart-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 64px 0;
+}
+
+.empty-label {
+    color: #888;
+    font-size: 1rem;
+}
+
+.btn-shop {
+    display: inline-block;
+    background: #8b3a3a;
+    color: #fff;
+    padding: 10px 28px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    margin-top: 8px;
+    transition: background 0.2s;
+}
+
+.btn-shop:hover {
+    background: #722e2e;
+}

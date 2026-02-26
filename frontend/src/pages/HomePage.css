@@ -1,0 +1,153 @@
+.home-page {
+    width: 100%;
+}
+
+/* hero */
+
+.hero {
+    background: #f5e6d3;
+    padding: 96px 24px;
+}
+
+.hero-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.hero-title {
+    font-family: 'Recoleta', serif;
+    font-size: 4rem;
+    color: #8b3a3a;
+    margin-bottom: 16px;
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    color: #6b5a4e;
+    margin-bottom: 40px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    background: #8b3a3a;
+    color: #fff;
+    padding: 12px 32px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #722e2e;
+}
+
+.btn-outline {
+    display: inline-block;
+    border: 2px solid #8b3a3a;
+    color: #8b3a3a;
+    padding: 10px 30px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    background: #8b3a3a;
+    color: #fff;
+}
+
+/* featured */
+
+.featured {
+    padding: 64px 24px;
+}
+
+.section-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.section-title {
+    font-family: 'Recoleta', serif;
+    font-size: 1.8rem;
+    color: #8b3a3a;
+    margin-bottom: 32px;
+}
+
+.status-text {
+    color: #888;
+    padding: 40px 0;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.product-card {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+}
+
+.card-photo {
+    aspect-ratio: 1;
+    background: #e8e0d8;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.no-photo {
+    width: 100%;
+    height: 100%;
+}
+
+.card-name {
+    font-size: 0.95rem;
+    color: #3a3a3a;
+    font-weight: 500;
+}
+
+.card-price {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #8b3a3a;
+}
+
+.see-all {
+    margin-top: 48px;
+    text-align: center;
+}
+
+@media (max-width: 900px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+}
