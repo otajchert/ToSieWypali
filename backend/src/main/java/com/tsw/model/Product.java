@@ -42,13 +42,16 @@ public class Product {
     @Column(length = 50)
     private String width;
 
-    // "length" is a MySQL reserved word
     @Column(name = "product_length", length = 50)
     private String productLength;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "product_category",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<Category> categories = new ArrayList<>();
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC")
@@ -76,8 +79,8 @@ public class Product {
     public void setWidth(String width) { this.width = width; }
     public String getProductLength() { return productLength; }
     public void setProductLength(String productLength) { this.productLength = productLength; }
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
+    public List<Category> getCategories() { return categories; }
+    public void setCategories(List<Category> categories) { this.categories = categories; }
     public List<ProductImage> getImages() { return images; }
     public void setImages(List<ProductImage> images) { this.images = images; }
 }
