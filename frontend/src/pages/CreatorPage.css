@@ -11,7 +11,7 @@
 .creator-title {
     font-family: 'Recoleta', serif;
     font-size: 2.2rem;
-    color: #8b3a3a;
+    color: #6b1e1a;
     margin-bottom: 12px;
 }
 
@@ -41,7 +41,7 @@
 }
 
 .creator-option:hover {
-    border-color: #8b3a3a;
+    border-color: #6b1e1a;
     transform: translateY(-4px);
 }
 
@@ -81,13 +81,13 @@
 .option-label {
     font-family: 'Recoleta', serif;
     font-size: 1.25rem;
-    color: #3a3a3a;
+    color: #6b1e1a;
     font-weight: 600;
 }
 
 .option-desc {
     font-size: 0.85rem;
-    color: #8b3a3a;
+    color: #6b1e1a;
 }
 
 @media (max-width: 600px) {

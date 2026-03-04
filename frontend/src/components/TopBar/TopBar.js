@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './TopBar.css';
 
 function TopBar() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [shopOpen, setShopOpen] = useState(false);
+    const [categories, setCategories] = useState([]);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        fetch('/api/categories')
+            .then(res => res.ok ? res.json() : [])
+            .then(data => setCategories(data))
+            .catch(() => {});
+    }, []);
 
     function handleSearch(e) {
         e.preventDefault();
@@ -37,24 +44,24 @@ function TopBar() {
                 </form>
 
                 <div className="nav-links">
-                    <div
-                        className="nav-item"
-                        onMouseEnter={() => setShopOpen(true)}
-                        onMouseLeave={() => setShopOpen(false)}
-                    >
+                    <div className="nav-item">
                         <Link to="/sklep" className="nav-link">
                             Sklep
                             <svg className="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <polyline points="6 9 12 15 18 9" />
                             </svg>
                         </Link>
-                        {shopOpen && (
-                            <div className="dropdown">
-                                <Link to="/sklep?kategoria=dekoracyjne" className="dropdown-item">Kubki</Link>
-                                <Link to="/sklep?kategoria=lazienka" className="dropdown-item">Miski</Link>
-                                <Link to="/sklep?kategoria=rosliny" className="dropdown-item">Dekoracje</Link>
-                            </div>
-                        )}
+                        <div className="dropdown">
+                            {categories.map(cat => (
+                                <Link
+                                    key={cat.id}
+                                    to={`/sklep?kategoria=${encodeURIComponent(cat.categoryName)}`}
+                                    className="dropdown-item"
+                                >
+                                    {cat.categoryName}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
 
                     <Link to="/warsztaty" className="nav-link">Warsztaty</Link>

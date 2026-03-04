@@ -29,7 +29,9 @@ function ShopPage() {
 
     const filtered = products.filter(p => {
         const matchesQuery = !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = !category || (p.category?.categoryName || '').toLowerCase().includes(category.toLowerCase());
+        const matchesCategory = !category || (p.categories || []).some(
+            c => c.categoryName.toLowerCase() === category.toLowerCase()
+        );
         return matchesQuery && matchesCategory;
     });
 

@@ -44,8 +44,18 @@ function ProductDetailPage() {
                     </div>
 
                     <div className="detail-info">
-                        {product.category && (
-                            <span className="detail-category">{product.category.categoryName}</span>
+                        {product.categories && product.categories.length > 0 && (
+                            <div className="detail-categories">
+                                {product.categories.map(c => (
+                                    <Link
+                                        key={c.id}
+                                        to={`/sklep?kategoria=${encodeURIComponent(c.categoryName)}`}
+                                        className="detail-category"
+                                    >
+                                        {c.categoryName}
+                                    </Link>
+                                ))}
+                            </div>
                         )}
                         <h1 className="detail-name">{product.name}</h1>
                         <p className="detail-price">{product.price} zł</p>
@@ -54,24 +64,30 @@ function ProductDetailPage() {
                             <p className="detail-description">{product.description}</p>
                         )}
 
-                        {(product.height || product.diameter || product.capacity) && (
+                        {(product.material || product.height || product.width || product.productLength) && (
                             <div className="detail-meta">
+                                {product.material && (
+                                    <div className="meta-row">
+                                        <span>materiał:</span>
+                                        <span>{product.material}</span>
+                                    </div>
+                                )}
                                 {product.height && (
                                     <div className="meta-row">
-                                        <span>Wysokość</span>
-                                        <span>{product.height} cm</span>
+                                        <span>wysokość:</span>
+                                        <span>{product.height}</span>
                                     </div>
                                 )}
-                                {product.diameter && (
+                                {product.width && (
                                     <div className="meta-row">
-                                        <span>Średnica</span>
-                                        <span>{product.diameter} cm</span>
+                                        <span>szerokość:</span>
+                                        <span>{product.width}</span>
                                     </div>
                                 )}
-                                {product.capacity && (
+                                {product.productLength && (
                                     <div className="meta-row">
-                                        <span>Pojemność</span>
-                                        <span>{product.capacity} l</span>
+                                        <span>głębokość:</span>
+                                        <span>{product.productLength}</span>
                                     </div>
                                 )}
                             </div>
@@ -86,7 +102,7 @@ function ProductDetailPage() {
                             </div>
                         </div>
 
-                        <p className="stock-info">
+                        <p className={`stock-info${maxQty === 0 ? ' out-of-stock' : ''}`}>
                             {maxQty > 0 ? `Dostępne: ${maxQty} szt.` : 'Brak w magazynie'}
                         </p>
 

@@ -1,29 +1,33 @@
 @font-face {
     font-family: 'Recoleta';
-    src: local('Recoleta-Regular'), local('Recoleta Regular'), local('Recoleta');
+    src: url('./fonts/Recoleta-Regular.otf') format('opentype');
     font-weight: 400;
     font-style: normal;
+    font-display: swap;
 }
 
 @font-face {
     font-family: 'Recoleta';
-    src: local('Recoleta-Medium'), local('Recoleta Medium');
+    src: url('./fonts/Recoleta-Medium.otf') format('opentype');
     font-weight: 500;
     font-style: normal;
+    font-display: swap;
 }
 
 @font-face {
     font-family: 'Recoleta';
-    src: local('Recoleta-SemiBold'), local('Recoleta SemiBold');
+    src: url('./fonts/Recoleta-SemiBold.otf') format('opentype');
     font-weight: 600;
     font-style: normal;
+    font-display: swap;
 }
 
 @font-face {
     font-family: 'Recoleta';
-    src: local('Recoleta-Bold'), local('Recoleta Bold');
+    src: url('./fonts/Recoleta-Bold.otf') format('opentype');
     font-weight: 700;
     font-style: normal;
+    font-display: swap;
 }
 
 * {
@@ -33,9 +37,9 @@
 }
 
 body {
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Recoleta', serif;
     background: #faf7f4;
-    color: #3a3a3a;
+    color: #6b1e1a;
 }
 
 .page-content {

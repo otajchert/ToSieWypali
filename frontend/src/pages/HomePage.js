@@ -21,11 +21,6 @@ function HomePage() {
             <section className="hero">
                 <div className="hero-inner">
                     <h1 className="hero-title">To Się Wypali!</h1>
-                    <p className="hero-subtitle">Ceramiczne ulepki</p>
-                    <div className="hero-actions">
-                        <Link to="/sklep" className="btn-primary">Przejdź do sklepu</Link>
-                        <Link to="/kreator" className="btn-outline">Stwórz swój produkt</Link>
-                    </div>
                 </div>
             </section>
 

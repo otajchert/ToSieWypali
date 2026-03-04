@@ -5,8 +5,7 @@
 /* hero */
 
 .hero {
-    background: #f5e6d3;
-    padding: 96px 24px;
+    padding: 40px 24px 0px;
 }
 
 .hero-inner {
@@ -18,14 +17,14 @@
 .hero-title {
     font-family: 'Recoleta', serif;
     font-size: 4rem;
-    color: #8b3a3a;
+    color: #6b1e1a;
     margin-bottom: 16px;
 }
 
 .hero-subtitle {
     font-size: 1.15rem;
     color: #6b5a4e;
-    margin-bottom: 40px;
+    margin-bottom: 0;
 }
 
 .hero-actions {
@@ -36,7 +35,7 @@
 }
 
 .btn-primary {
-    background: #8b3a3a;
+    background: #6b1e1a;
     color: #fff;
     padding: 12px 32px;
     border-radius: 4px;
@@ -51,8 +50,8 @@
 
 .btn-outline {
     display: inline-block;
-    border: 2px solid #8b3a3a;
-    color: #8b3a3a;
+    border: 2px solid #6b1e1a;
+    color: #6b1e1a;
     padding: 10px 30px;
     border-radius: 4px;
     text-decoration: none;
@@ -61,14 +60,14 @@
 }
 
 .btn-outline:hover {
-    background: #8b3a3a;
+    background: #6b1e1a;
     color: #fff;
 }
 
 /* featured */
 
 .featured {
-    padding: 64px 24px;
+    padding: 32px 24px 64px;
 }
 
 .section-inner {
@@ -79,7 +78,7 @@
 .section-title {
     font-family: 'Recoleta', serif;
     font-size: 1.8rem;
-    color: #8b3a3a;
+    color: #6b1e1a;
     margin-bottom: 32px;
 }
 
@@ -127,14 +126,14 @@
 
 .card-name {
     font-size: 0.95rem;
-    color: #3a3a3a;
+    color: #6b1e1a;
     font-weight: 500;
 }
 
 .card-price {
     font-size: 1rem;
     font-weight: 700;
-    color: #8b3a3a;
+    color: #6b1e1a;
 }
 
 .see-all {
