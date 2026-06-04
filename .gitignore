@@ -51,6 +51,9 @@ logs/
 # Docker
 docker-compose.override.yml
 
+# Local uploads (replaced by Supabase Storage)
+backend/uploads/
+
 # Testing
 coverage/
 .pytest_cache/

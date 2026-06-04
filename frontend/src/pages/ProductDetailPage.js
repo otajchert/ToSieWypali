@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import './ProductDetailPage.css';
 
+const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}`);
+
 function ProductDetailPage() {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [qty, setQty] = useState(1);
+    const [activePhoto, setActivePhoto] = useState(null);
 
     useEffect(() => {
         fetch(`/api/products/${id}`)
@@ -17,6 +20,7 @@ function ProductDetailPage() {
             })
             .then(data => {
                 setProduct(data);
+                setActivePhoto(data.photo || (data.images && data.images[0]?.imageUrl) || null);
                 setLoading(false);
             })
             .catch(err => {
@@ -30,6 +34,14 @@ function ProductDetailPage() {
 
     const maxQty = product.qtyInStock || 0;
 
+    const allPhotos = [
+        ...(product.photo ? [product.photo] : []),
+        ...(product.images || []).map(img => img.imageUrl).filter(url => url !== product.photo),
+    ];
+    const activeIndex = allPhotos.indexOf(activePhoto);
+    const goPrev = () => setActivePhoto(allPhotos[(activeIndex - 1 + allPhotos.length) % allPhotos.length]);
+    const goNext = () => setActivePhoto(allPhotos[(activeIndex + 1) % allPhotos.length]);
+
     return (
         <div className="detail-page">
             <div className="detail-inner">
@@ -37,10 +49,32 @@ function ProductDetailPage() {
 
                 <div className="detail-layout">
                     <div className="detail-photo">
-                        {product.photo
-                            ? <img src={product.photo} alt={product.name} />
-                            : <div className="no-photo" />
-                        }
+                        <div className="photo-viewer">
+                            {activePhoto
+                                ? <img src={imgSrc(activePhoto)} alt={product.name} />
+                                : <div className="no-photo" />
+                            }
+                            {allPhotos.length > 1 && (
+                                <>
+                                    <button className="photo-arrow photo-arrow-left" onClick={goPrev}>&#8249;</button>
+                                    <button className="photo-arrow photo-arrow-right" onClick={goNext}>&#8250;</button>
+                                </>
+                            )}
+                        </div>
+
+                        {allPhotos.length > 1 && (
+                            <div className="gallery-thumbs">
+                                {allPhotos.map(url => (
+                                    <img
+                                        key={url}
+                                        src={imgSrc(url)}
+                                        alt=""
+                                        className={`gallery-thumb${activePhoto === url ? ' active' : ''}`}
+                                        onClick={() => setActivePhoto(url)}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="detail-info">

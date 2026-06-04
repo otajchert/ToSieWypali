@@ -60,10 +60,12 @@ function ShopPage() {
                             {filtered.map(product => (
                                 <Link key={product.id} to={`/sklep/${product.id}`} className="product-card">
                                     <div className="product-photo">
-                                        {product.photo
-                                            ? <img src={product.photo} alt={product.name} />
-                                            : <div className="no-photo" />
-                                        }
+                                        {(() => {
+                                            const src = product.photo || product.images?.[0]?.imageUrl;
+                                            return src
+                                                ? <img src={src.startsWith('http') ? src : `/api/images/${src}`} alt={product.name} />
+                                                : <div className="no-photo" />;
+                                        })()}
                                     </div>
                                     <span className="product-name">{product.name}</span>
                                     <span className="product-price">{product.price} zł</span>

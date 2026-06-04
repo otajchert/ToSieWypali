@@ -12,7 +12,7 @@ FROM eclipse-temurin:22-jre-jammy
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-RUN mkdir -p /app/uploads && chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8080

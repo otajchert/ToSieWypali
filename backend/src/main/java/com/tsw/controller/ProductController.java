@@ -68,13 +68,37 @@ public class ProductController {
     @DeleteMapping("/{id}/images/{imageId}")
     public ResponseEntity<Void> removeImage(@PathVariable UUID id,
                                              @PathVariable UUID imageId) {
-        try {
-            return productService.removeGalleryImage(id, imageId)
-                    ? ResponseEntity.noContent().build()
-                    : ResponseEntity.notFound().build();
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
-        }
+        return productService.removeGalleryImage(id, imageId)
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/{id}/photo-url")
+    public ResponseEntity<Product> linkPhotoUrl(@PathVariable UUID id,
+                                                 @RequestBody java.util.Map<String, String> body) {
+        String url = body.get("url");
+        if (url == null || url.isBlank()) return ResponseEntity.badRequest().build();
+        return productService.linkPhotoUrl(id, url)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PostMapping("/{id}/image-url")
+    public ResponseEntity<ProductImage> linkGalleryUrl(@PathVariable UUID id,
+                                                        @RequestBody java.util.Map<String, String> body) {
+        String url = body.get("url");
+        if (url == null || url.isBlank()) return ResponseEntity.badRequest().build();
+        return productService.linkGalleryUrl(id, url)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/images/{imageId}/set-main")
+    public ResponseEntity<Product> setImageAsMain(@PathVariable UUID id,
+                                                   @PathVariable UUID imageId) {
+        return productService.setImageAsMain(id, imageId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{id}/photo")

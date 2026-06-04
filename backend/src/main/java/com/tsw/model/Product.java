@@ -1,6 +1,8 @@
 package com.tsw.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,7 @@ public class Product {
     private String productLength;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SELECT)
     @JoinTable(
         name = "product_category",
         joinColumns = @JoinColumn(name = "product_id"),
@@ -53,7 +56,8 @@ public class Product {
     )
     private List<Category> categories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(FetchMode.SELECT)
     @OrderBy("sortOrder ASC")
     private List<ProductImage> images = new ArrayList<>();
 

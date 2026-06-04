@@ -7,14 +7,10 @@ import com.tsw.model.ProductImage;
 import com.tsw.repository.CategoryRepository;
 import com.tsw.repository.ProductImageRepository;
 import com.tsw.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,16 +22,16 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final CategoryRepository categoryRepository;
-
-    @Value("${app.upload.dir:/app/uploads}")
-    private String uploadDir;
+    private final SupabaseStorageService storageService;
 
     public ProductService(ProductRepository productRepository,
                           ProductImageRepository productImageRepository,
-                          CategoryRepository categoryRepository) {
+                          CategoryRepository categoryRepository,
+                          SupabaseStorageService storageService) {
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.categoryRepository = categoryRepository;
+        this.storageService = storageService;
     }
 
     public List<Product> findAll() {
@@ -61,12 +57,11 @@ public class ProductService {
 
     public boolean delete(UUID id) {
         return productRepository.findById(id).map(product -> {
-            // delete all image files from disk before removing the entity
             for (ProductImage img : product.getImages()) {
-                deleteFile(img.getImageUrl());
+                storageService.delete(img.getImageUrl());
             }
             if (product.getPhoto() != null) {
-                deleteFile(product.getPhoto());
+                storageService.delete(product.getPhoto());
             }
             productRepository.delete(product);
             return true;
@@ -77,7 +72,7 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        String relativePath = saveFile(file, "products");
+        String publicUrl = saveFile(file, "products");
 
         int nextOrder = product.getImages().stream()
                 .mapToInt(ProductImage::getSortOrder)
@@ -85,39 +80,70 @@ public class ProductService {
                 .orElse(-1) + 1;
 
         ProductImage image = new ProductImage();
-        image.setImageUrl(relativePath);
+        image.setImageUrl(publicUrl);
         image.setSortOrder(nextOrder);
         image.setProduct(product);
 
         return productImageRepository.save(image);
     }
 
-    public boolean removeGalleryImage(UUID productId, UUID imageId) throws IOException {
+    public boolean removeGalleryImage(UUID productId, UUID imageId) {
         return productImageRepository.findById(imageId).map(image -> {
             if (!image.getProduct().getId().equals(productId)) {
                 return false;
             }
-            deleteFile(image.getImageUrl());
+            storageService.delete(image.getImageUrl());
             productImageRepository.delete(image);
             return true;
         }).orElse(false);
+    }
+
+    public Optional<Product> linkPhotoUrl(UUID productId, String url) {
+        return productRepository.findById(productId).map(product -> {
+            product.setPhoto(url);
+            return productRepository.save(product);
+        });
+    }
+
+    public Optional<ProductImage> linkGalleryUrl(UUID productId, String url) {
+        return productRepository.findById(productId).map(product -> {
+            int nextOrder = product.getImages().stream()
+                    .mapToInt(ProductImage::getSortOrder)
+                    .max()
+                    .orElse(-1) + 1;
+            ProductImage image = new ProductImage();
+            image.setImageUrl(url);
+            image.setSortOrder(nextOrder);
+            image.setProduct(product);
+            return productImageRepository.save(image);
+        });
+    }
+
+    public Optional<Product> setImageAsMain(UUID productId, UUID imageId) {
+        return productRepository.findById(productId).map(product -> {
+            productImageRepository.findById(imageId).ifPresent(image -> {
+                if (image.getProduct().getId().equals(productId)) {
+                    product.setPhoto(image.getImageUrl());
+                    productRepository.save(product);
+                }
+            });
+            return product;
+        });
     }
 
     public Product setMainPhoto(UUID productId, MultipartFile file) throws IOException {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        // remove old main photo file if it exists
         if (product.getPhoto() != null) {
-            deleteFile(product.getPhoto());
+            storageService.delete(product.getPhoto());
         }
 
-        String relativePath = saveFile(file, "products");
-        product.setPhoto(relativePath);
+        String publicUrl = saveFile(file, "products");
+        product.setPhoto(publicUrl);
         return productRepository.save(product);
     }
 
-    // copies fields from the request onto the product entity
     private void applyRequest(Product product, ProductRequest req) {
         product.setName(req.getName());
         product.setDescription(req.getDescription());
@@ -136,28 +162,13 @@ public class ProductService {
         product.setCategories(categories);
     }
 
-    // saves uploaded file to {uploadDir}/{subdir}/{uuid}.{ext} and returns the relative path
+    // uploads file to Supabase and returns the public URL stored in the database
     private String saveFile(MultipartFile file, String subdir) throws IOException {
         String originalName = file.getOriginalFilename();
         String ext = (originalName != null && originalName.contains("."))
                 ? originalName.substring(originalName.lastIndexOf('.'))
                 : "";
-
-        String filename = UUID.randomUUID() + ext;
-        Path dir = Paths.get(uploadDir, subdir);
-        Files.createDirectories(dir);
-        Files.copy(file.getInputStream(), dir.resolve(filename));
-
-        return subdir + "/" + filename;
-    }
-
-    private void deleteFile(String relativePath) {
-        try {
-            Path path = Paths.get(uploadDir, relativePath);
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            // log but don't fail the request if the file is already gone
-            System.err.println("Could not delete file: " + relativePath + " - " + e.getMessage());
-        }
+        String objectPath = subdir + "/" + UUID.randomUUID() + ext;
+        return storageService.upload(file, objectPath);
     }
 }
