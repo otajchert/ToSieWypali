@@ -37,6 +37,10 @@ public class OrderService {
         this.orderStatusRepository = orderStatusRepository;
     }
 
+    public List<ShopOrder> findAll() {
+        return orderRepository.findAll();
+    }
+
     public List<ShopOrder> findByClient(UUID clientId) {
         return orderRepository.findByClientId(clientId);
     }

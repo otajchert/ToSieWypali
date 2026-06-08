@@ -197,3 +197,48 @@
 .login-btn:hover {
     background: rgba(255, 255, 255, 0.22);
 }
+
+.user-menu-wrap {
+    position: relative;
+}
+
+.user-menu-trigger {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+}
+
+.user-dropdown {
+    right: 0;
+    left: auto;
+    min-width: 180px;
+}
+
+.user-dropdown-email {
+    display: block;
+    padding: 10px 16px 6px;
+    font-size: 0.8rem;
+    color: #6b5a4e;
+    border-bottom: 1px solid #e8e0d8;
+    margin-bottom: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-menu-wrap:hover .user-dropdown {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.dropdown-logout {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Recoleta', serif;
+    color: #6b1e1a;
+    font-size: 0.9rem;
+}

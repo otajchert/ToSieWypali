@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import './TopBar.css';
 
 function TopBar() {
     const [searchQuery, setSearchQuery] = useState('');
     const [categories, setCategories] = useState([]);
+    const { user, logout } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,6 +22,11 @@ function TopBar() {
             navigate(`/sklep?q=${encodeURIComponent(searchQuery.trim())}`);
             setSearchQuery('');
         }
+    }
+
+    function handleLogout() {
+        logout();
+        navigate('/logowanie');
     }
 
     return (
@@ -77,14 +84,36 @@ function TopBar() {
                         </svg>
                     </Link>
 
-                    <Link to="/konto" className="icon-btn" aria-label="Konto">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                        </svg>
-                    </Link>
-
-                    <Link to="/logowanie" className="login-btn">Zaloguj</Link>
+                    {user ? (
+                        <div className="nav-item user-menu-wrap">
+                            <button className="icon-btn user-menu-trigger" aria-label="Konto">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </button>
+                            <div className="dropdown user-dropdown">
+                                <span className="user-dropdown-email">{user.email}</span>
+                                {user.role === 'ADMIN' && (
+                                    <Link to="/admin" className="dropdown-item">Panel administracyjny</Link>
+                                )}
+                                <Link to="/konto" className="dropdown-item">Moje konto</Link>
+                                <button className="dropdown-item dropdown-logout" onClick={handleLogout}>
+                                    Wyloguj
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <Link to="/konto" className="icon-btn" aria-label="Konto">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </Link>
+                            <Link to="/logowanie" className="login-btn">Zaloguj</Link>
+                        </>
+                    )}
                 </div>
             </div>
         </nav>

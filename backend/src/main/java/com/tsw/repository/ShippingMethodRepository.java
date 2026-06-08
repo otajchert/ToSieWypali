@@ -7,4 +7,5 @@ import java.util.UUID;
 
 @Repository
 public interface ShippingMethodRepository extends JpaRepository<ShippingMethod, UUID> {
+    java.util.Optional<ShippingMethod> findByName(String name);
 }

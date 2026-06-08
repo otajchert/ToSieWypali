@@ -40,6 +40,14 @@ public class AddressController {
                 : ResponseEntity.notFound().build();
     }
 
+    @PutMapping("/{addressId}")
+    public ResponseEntity<?> update(@PathVariable UUID clientId, @PathVariable UUID addressId,
+                                    @RequestBody AddressRequest req) {
+        return addressService.update(clientId, addressId, req)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/{addressId}/default")
     public ResponseEntity<Void> setDefault(@PathVariable UUID clientId, @PathVariable UUID addressId) {
         return addressService.setDefault(clientId, addressId)

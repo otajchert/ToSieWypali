@@ -41,10 +41,14 @@ public class ClientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Client> update(@PathVariable UUID id, @RequestBody ClientRequest req) {
-        return clientService.update(id, req)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> update(@PathVariable UUID id, @RequestBody ClientRequest req) {
+        try {
+            return clientService.update(id, req)
+                    .map(c -> (ResponseEntity<?>) ResponseEntity.ok(c))
+                    .orElse(ResponseEntity.notFound().build());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
