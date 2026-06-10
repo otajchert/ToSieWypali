@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import './TopBar.css';
 
 function TopBar() {
     const [searchQuery, setSearchQuery] = useState('');
     const [categories, setCategories] = useState([]);
     const { user, logout } = useAuth();
+    const { totalCount } = useCart();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -76,12 +78,15 @@ function TopBar() {
 
                     <button className="lang-btn">EN</button>
 
-                    <Link to="/koszyk" className="icon-btn" aria-label="Koszyk">
+                    <Link to="/koszyk" className="icon-btn cart-icon-btn" aria-label="Koszyk">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
                             <line x1="3" y1="6" x2="21" y2="6" />
                             <path d="M16 10a4 4 0 01-8 0" />
                         </svg>
+                        {totalCount > 0 && (
+                            <span className="cart-badge">{totalCount > 99 ? '99+' : totalCount}</span>
+                        )}
                     </Link>
 
                     {user ? (
