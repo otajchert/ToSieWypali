@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+
 @Service
 public class AddressService {
 
@@ -69,6 +70,23 @@ public class AddressService {
             addressRepository.deleteById(addressId);
             return true;
         }).orElse(false);
+    }
+
+    public Optional<ClientAddress> update(UUID clientId, UUID addressId, AddressRequest req) {
+        ClientAddressId linkId = new ClientAddressId();
+        linkId.setClientId(clientId);
+        linkId.setAddressId(addressId);
+
+        return clientAddressRepository.findById(linkId).map(link -> {
+            applyRequest(link.getAddress(), req);
+            addressRepository.save(link.getAddress());
+            link.setName(req.getName());
+            if (req.isDefault()) {
+                clearDefault(clientId);
+                link.setIsDefault(true);
+            }
+            return clientAddressRepository.save(link);
+        });
     }
 
     public boolean setDefault(UUID clientId, UUID addressId) {

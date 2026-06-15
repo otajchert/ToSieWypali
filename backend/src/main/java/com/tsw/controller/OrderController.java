@@ -20,6 +20,11 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @GetMapping
+    public List<ShopOrder> getAll() {
+        return orderService.findAll();
+    }
+
     @GetMapping("/client/{clientId}")
     public List<ShopOrder> getByClient(@PathVariable UUID clientId) {
         return orderService.findByClient(clientId);

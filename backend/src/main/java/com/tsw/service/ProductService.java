@@ -11,8 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -155,10 +157,10 @@ public class ProductService {
         product.setWidth(req.getWidth());
         product.setProductLength(req.getProductLength());
 
-        List<Category> categories = req.getCategoryIds().stream()
+        Set<Category> categories = req.getCategoryIds().stream()
                 .map(categoryId -> categoryRepository.findById(categoryId).orElse(null))
                 .filter(c -> c != null)
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         product.setCategories(categories);
     }
 

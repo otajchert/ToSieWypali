@@ -1,0 +1,165 @@
+.admin-page {
+    min-height: calc(100vh - 64px);
+    background: #faf7f4;
+    padding: 48px 24px;
+}
+
+.admin-inner {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+.admin-forbidden {
+    max-width: 400px;
+    margin: 80px auto;
+    text-align: center;
+    color: #6b5a4e;
+}
+
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 40px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e8e0d8;
+}
+
+.admin-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #6b1e1a;
+}
+
+.admin-header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.admin-nav-btn {
+    padding: 9px 20px;
+    background: transparent;
+    border: 1px solid #6b5a4e;
+    color: #6b5a4e;
+    border-radius: 4px;
+    font-family: 'Recoleta', serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.admin-nav-btn:hover {
+    background: #6b5a4e;
+    color: #fff;
+}
+
+.logout-btn {
+    padding: 9px 20px;
+    background: transparent;
+    border: 1px solid #6b1e1a;
+    color: #6b1e1a;
+    border-radius: 4px;
+    font-family: 'Recoleta', serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.logout-btn:hover {
+    background: #6b1e1a;
+    color: #fff;
+}
+
+.admin-section {
+    margin-bottom: 48px;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #6b1e1a;
+    margin-bottom: 16px;
+}
+
+.admin-hint {
+    color: #6b5a4e;
+    font-size: 0.95rem;
+}
+
+.admin-table-wrap {
+    overflow-x: auto;
+    border-radius: 6px;
+    border: 1px solid #e8e0d8;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    font-size: 0.92rem;
+}
+
+.admin-table th {
+    background: #f5f0ec;
+    color: #6b1e1a;
+    font-weight: 600;
+    text-align: left;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e8e0d8;
+    white-space: nowrap;
+}
+
+.admin-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0ebe6;
+    color: #3a2a28;
+    vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tr:hover td {
+    background: #faf7f4;
+}
+
+.order-date {
+    white-space: nowrap;
+    color: #6b5a4e;
+}
+
+.order-client {
+    font-size: 0.88rem;
+    color: #6b5a4e;
+}
+
+.order-total {
+    font-weight: 600;
+    color: #6b1e1a;
+    white-space: nowrap;
+}
+
+.status-select {
+    padding: 6px 10px;
+    border: 1px solid #d4c8c0;
+    border-radius: 4px;
+    font-family: 'Recoleta', serif;
+    font-size: 0.88rem;
+    color: #3a2a28;
+    background: #faf7f4;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.status-select:focus {
+    border-color: #6b1e1a;
+}
+
+.status-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

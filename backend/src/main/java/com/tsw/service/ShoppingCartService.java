@@ -45,7 +45,6 @@ public class ShoppingCartService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        // if item already in cart, just increase quantity
         List<CartItem> existing = cartItemRepository.findByCartId(cart.getId());
         Optional<CartItem> existingItem = existing.stream()
                 .filter(i -> i.getProduct().getId().equals(productId))
@@ -53,8 +52,16 @@ public class ShoppingCartService {
 
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
-            item.setQty(item.getQty() + qty);
+            int newQty = item.getQty() + qty;
+            if (newQty > product.getQtyInStock()) {
+                throw new IllegalArgumentException("Niewystarczająca ilość w magazynie");
+            }
+            item.setQty(newQty);
             return cartItemRepository.save(item);
+        }
+
+        if (qty > product.getQtyInStock()) {
+            throw new IllegalArgumentException("Niewystarczająca ilość w magazynie");
         }
 
         CartItem item = new CartItem();
@@ -77,6 +84,9 @@ public class ShoppingCartService {
     public Optional<CartItem> updateItemQty(UUID clientId, UUID itemId, int qty) {
         return cartItemRepository.findById(itemId).map(item -> {
             if (!item.getCart().getClient().getId().equals(clientId)) {
+                return null;
+            }
+            if (qty < 1 || qty > item.getProduct().getQtyInStock()) {
                 return null;
             }
             item.setQty(qty);

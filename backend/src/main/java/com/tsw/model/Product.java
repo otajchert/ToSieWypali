@@ -5,7 +5,9 @@ import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -54,7 +56,7 @@ public class Product {
         joinColumns = @JoinColumn(name = "product_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private List<Category> categories = new ArrayList<>();
+    private Set<Category> categories = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @Fetch(FetchMode.SELECT)
@@ -83,8 +85,8 @@ public class Product {
     public void setWidth(String width) { this.width = width; }
     public String getProductLength() { return productLength; }
     public void setProductLength(String productLength) { this.productLength = productLength; }
-    public List<Category> getCategories() { return categories; }
-    public void setCategories(List<Category> categories) { this.categories = categories; }
+    public Set<Category> getCategories() { return categories; }
+    public void setCategories(Set<Category> categories) { this.categories = categories; }
     public List<ProductImage> getImages() { return images; }
     public void setImages(List<ProductImage> images) { this.images = images; }
 }

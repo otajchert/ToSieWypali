@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 import './ProductDetailPage.css';
 
 const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}`);
@@ -11,6 +12,10 @@ function ProductDetailPage() {
     const [error, setError] = useState(null);
     const [qty, setQty] = useState(1);
     const [activePhoto, setActivePhoto] = useState(null);
+    const [notice, setNotice] = useState(null);
+    const [adding, setAdding] = useState(false);
+    const noticeTimer = useRef(null);
+    const { addItem } = useCart();
 
     useEffect(() => {
         fetch(`/api/products/${id}`)
@@ -28,6 +33,29 @@ function ProductDetailPage() {
                 setLoading(false);
             });
     }, [id]);
+
+    function showNotice(type, text) {
+        clearTimeout(noticeTimer.current);
+        setNotice({ type, text });
+        noticeTimer.current = setTimeout(() => setNotice(null), 6000);
+    }
+
+    async function handleAddToCart() {
+        if (!product || adding) return;
+        setAdding(true);
+        try {
+            const isFirst = await addItem(product, qty);
+            if (isFirst) {
+                showNotice('info', 'Dodanie produktu do koszyka nie rezerwuje go — rezerwacja następuje dopiero przy zakupie.');
+            } else {
+                showNotice('success', 'Dodano do koszyka!');
+            }
+        } catch (err) {
+            showNotice('error', err.message || 'Błąd dodawania do koszyka');
+        } finally {
+            setAdding(false);
+        }
+    }
 
     if (loading) return <p className="status-text">Ładowanie...</p>;
     if (error) return <p className="status-text error">{error}</p>;
@@ -140,9 +168,19 @@ function ProductDetailPage() {
                             {maxQty > 0 ? `Dostępne: ${maxQty} szt.` : 'Brak w magazynie'}
                         </p>
 
-                        <button className="add-to-cart" disabled={maxQty === 0}>
-                            Dodaj do koszyka
+                        <button
+                            className="add-to-cart"
+                            disabled={maxQty === 0 || adding}
+                            onClick={handleAddToCart}
+                        >
+                            {adding ? 'Dodawanie...' : 'Dodaj do koszyka'}
                         </button>
+
+                        {notice && (
+                            <div className={`add-notice add-notice--${notice.type}`}>
+                                {notice.text}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
