@@ -1,5 +1,6 @@
 package com.tsw.controller;
 
+import com.tsw.dto.OrderItemDto;
 import com.tsw.dto.OrderRequest;
 import com.tsw.model.ShopOrder;
 import com.tsw.service.OrderService;
@@ -35,6 +36,14 @@ public class OrderController {
         return orderService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/items")
+    public ResponseEntity<List<OrderItemDto>> getOrderItems(@PathVariable UUID id) {
+        if (orderService.findById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(orderService.getOrderItems(id));
     }
 
     // body: OrderRequest JSON

@@ -14,7 +14,7 @@ function ProductFormPage() {
         description: '',
         price: '',
         qtyInStock: '',
-        material: '',
+        weight: '',
         height: '',
         width: '',
         productLength: '',
@@ -46,7 +46,7 @@ function ProductFormPage() {
                     description: product.description || '',
                     price: product.price != null ? String(product.price) : '',
                     qtyInStock: product.qtyInStock != null ? String(product.qtyInStock) : '',
-                    material: product.material || '',
+                    weight: product.weight || '',
                     height: product.height || '',
                     width: product.width || '',
                     productLength: product.productLength || '',
@@ -105,7 +105,7 @@ function ProductFormPage() {
             description: form.description,
             price: parseFloat(form.price),
             qtyInStock: parseInt(form.qtyInStock, 10),
-            material: form.material,
+            weight: form.weight,
             height: form.height,
             width: form.width,
             productLength: form.productLength,
@@ -192,8 +192,8 @@ function ProductFormPage() {
                     <section className="pf-section">
                         <h2 className="pf-section-title">Szczegóły</h2>
                         <div className="pf-field">
-                            <label>Materiał</label>
-                            <input name="material" value={form.material} onChange={handleChange} />
+                            <label>Waga</label>
+                            <input name="weight" value={form.weight} onChange={handleChange} placeholder="np. 350g" />
                         </div>
                         <div className="pf-row">
                             <div className="pf-field">

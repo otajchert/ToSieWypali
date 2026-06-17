@@ -370,6 +370,17 @@
     padding: 14px 20px;
 }
 
+.order-card--link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.order-card--link:hover {
+    border-color: #6b1e1a;
+    box-shadow: 0 2px 8px rgba(107, 30, 26, 0.08);
+}
+
 .order-meta {
     display: flex;
     align-items: center;

@@ -166,7 +166,7 @@ public class ProductService {
         product.setDescription(req.getDescription());
         product.setPrice(req.getPrice());
         product.setQtyInStock(req.getQtyInStock());
-        product.setMaterial(req.getMaterial());
+        product.setWeight(req.getWeight());
         product.setHeight(req.getHeight());
         product.setWidth(req.getWidth());
         product.setProductLength(req.getProductLength());

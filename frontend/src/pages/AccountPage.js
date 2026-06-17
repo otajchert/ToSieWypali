@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './AccountPage.css';
 
@@ -358,7 +358,7 @@ function AccountPage() {
                     ) : (
                         <div className="orders-list">
                             {orders.map(order => (
-                                <div key={order.id} className="order-card">
+                                <Link key={order.id} to={`/zamowienie/${order.id}`} className="order-card order-card--link">
                                     <div className="order-meta">
                                         <span className="order-date">
                                             {order.orderDate
@@ -374,7 +374,7 @@ function AccountPage() {
                                             ? `${Number(order.orderTotal).toFixed(2)} zł`
                                             : '—'}
                                     </div>
-                                </div>
+                                </Link>
                             ))}
                         </div>
                     )}

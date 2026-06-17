@@ -54,6 +54,7 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         seedAdmin();
         seedProducts();
+        backfillProductWeights();
         seedTestUser();
     }
 
@@ -85,7 +86,7 @@ public class DataInitializer implements CommandLineRunner {
         kubek.setQtyInStock(4);
         kubek.setSku("MUG-001");
         kubek.setPrice(new BigDecimal("65.00"));
-        kubek.setMaterial("Kamionka");
+        kubek.setWeight("350 g");
         kubek.setHeight("10cm");
         kubek.setWidth("8cm");
         kubek.setProductLength("8cm");
@@ -107,7 +108,7 @@ public class DataInitializer implements CommandLineRunner {
         mydelniczka.setQtyInStock(8);
         mydelniczka.setSku("DEC-001");
         mydelniczka.setPrice(new BigDecimal("110.00"));
-        mydelniczka.setMaterial("Kamionka");
+        mydelniczka.setWeight("200 g");
         mydelniczka.setHeight("5cm");
         mydelniczka.setWidth("18cm");
         mydelniczka.setProductLength("13cm");
@@ -128,7 +129,7 @@ public class DataInitializer implements CommandLineRunner {
         miska.setQtyInStock(12);
         miska.setSku("BWL-001");
         miska.setPrice(new BigDecimal("55.00"));
-        miska.setMaterial("Kamionka");
+        miska.setWeight("480 g");
         miska.setHeight("11cm");
         miska.setWidth("16cm");
         miska.setProductLength("16cm");
@@ -143,7 +144,7 @@ public class DataInitializer implements CommandLineRunner {
         wazon.setQtyInStock(0);
         wazon.setSku("VAS-001");
         wazon.setPrice(new BigDecimal("120.00"));
-        wazon.setMaterial("Kamionka");
+        wazon.setWeight("1800 g");
         wazon.setHeight("45cm");
         wazon.setWidth("25cm");
         wazon.setProductLength("35cm");
@@ -151,6 +152,22 @@ public class DataInitializer implements CommandLineRunner {
         if (wazony != null) wazon.getCategories().add(wazony);
         if (dekoracje != null) wazon.getCategories().add(dekoracje);
         productRepository.save(wazon);
+    }
+
+    private void backfillProductWeights() {
+        java.util.Map<UUID, String> weights = new java.util.LinkedHashMap<>();
+        weights.put(UUID.fromString("00000000-0000-0000-0000-000000001001"), "350 g");
+        weights.put(UUID.fromString("00000000-0000-0000-0000-000000001002"), "200 g");
+        weights.put(UUID.fromString("00000000-0000-0000-0000-000000001003"), "480 g");
+        weights.put(UUID.fromString("00000000-0000-0000-0000-000000001004"), "1800 g");
+        weights.forEach((id, w) ->
+            productRepository.findById(id).ifPresent(p -> {
+                if (p.getWeight() == null || p.getWeight().isBlank()) {
+                    p.setWeight(w);
+                    productRepository.save(p);
+                }
+            })
+        );
     }
 
     private void seedTestUser() {

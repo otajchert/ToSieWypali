@@ -79,6 +79,7 @@ function AdminPage() {
                                         <th>Kwota</th>
                                         <th>Dostawa</th>
                                         <th>Status</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -111,6 +112,11 @@ function AdminPage() {
                                                         <option key={s} value={s}>{s}</option>
                                                     ))}
                                                 </select>
+                                            </td>
+                                            <td>
+                                                <Link to={`/zamowienie/${order.id}`} className="order-details-link">
+                                                    Szczegóły
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

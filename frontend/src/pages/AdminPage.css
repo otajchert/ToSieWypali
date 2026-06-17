@@ -179,3 +179,17 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+.order-details-link {
+    color: #6b1e1a;
+    text-decoration: none;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    padding: 4px 0;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+}
+
+.order-details-link:hover {
+    border-bottom-color: #6b1e1a;
+}

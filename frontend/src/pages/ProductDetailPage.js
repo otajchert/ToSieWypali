@@ -168,12 +168,12 @@ function ProductDetailPage() {
                             <p className="detail-description">{product.description}</p>
                         )}
 
-                        {(product.material || product.height || product.width || product.productLength) && (
+                        {(product.weight || product.height || product.width || product.productLength) && (
                             <div className="detail-meta">
-                                {product.material && (
+                                {product.weight && (
                                     <div className="meta-row">
-                                        <span>materiał:</span>
-                                        <span>{product.material}</span>
+                                        <span>waga:</span>
+                                        <span>{product.weight}</span>
                                     </div>
                                 )}
                                 {product.height && (

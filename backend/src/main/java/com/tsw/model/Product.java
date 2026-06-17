@@ -37,8 +37,8 @@ public class Product {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(length = 100)
-    private String material;
+    @Column(length = 50)
+    private String weight;
 
     @Column(length = 50)
     private String height;
@@ -77,8 +77,8 @@ public class Product {
     public void setSku(String sku) { this.sku = sku; }
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
-    public String getMaterial() { return material; }
-    public void setMaterial(String material) { this.material = material; }
+    public String getWeight() { return weight; }
+    public void setWeight(String weight) { this.weight = weight; }
     public String getHeight() { return height; }
     public void setHeight(String height) { this.height = height; }
     public String getWidth() { return width; }
