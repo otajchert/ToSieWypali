@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './AdminPage.css';
 
@@ -59,6 +60,7 @@ function AdminPage() {
             <div className="admin-inner">
                 <div className="admin-header">
                     <h1 className="admin-title">Panel administracyjny</h1>
+                    <Link to="/admin/nowy-produkt" className="admin-add-btn">+ Dodaj produkt</Link>
                 </div>
 
                 <section className="admin-section">

@@ -32,6 +32,22 @@
     color: #6b1e1a;
 }
 
+.admin-add-btn {
+    display: inline-block;
+    background: #6b1e1a;
+    color: #fff;
+    padding: 9px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.admin-add-btn:hover {
+    background: #8b3a3a;
+}
+
 .admin-header-actions {
     display: flex;
     gap: 10px;

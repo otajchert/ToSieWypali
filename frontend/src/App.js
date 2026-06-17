@@ -10,6 +10,7 @@ import CartPage from './pages/CartPage';
 import LoginPage from './pages/LoginPage';
 import AccountPage from './pages/AccountPage';
 import AdminPage from './pages/AdminPage';
+import ProductFormPage from './pages/ProductFormPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import './App.css';
@@ -53,6 +54,12 @@ function AppRoutes() {
                     } />
                     <Route path="/admin" element={
                         <RequireAdmin><AdminPage /></RequireAdmin>
+                    } />
+                    <Route path="/admin/nowy-produkt" element={
+                        <RequireAdmin><ProductFormPage /></RequireAdmin>
+                    } />
+                    <Route path="/admin/produkt/:id" element={
+                        <RequireAdmin><ProductFormPage /></RequireAdmin>
                     } />
                 </Routes>
             </main>
