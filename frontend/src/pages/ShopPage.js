@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './ShopPage.css';
 
 function ShopPage() {
+    const { user } = useAuth();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -43,7 +45,12 @@ function ShopPage() {
         <div className="shop-page">
             <div className="shop-inner">
                 <div className="shop-header">
-                    <h1 className="shop-title">{pageTitle}</h1>
+                    <div className="shop-header-top">
+                        <h1 className="shop-title">{pageTitle}</h1>
+                        {user?.role === 'ADMIN' && (
+                            <Link to="/admin/nowy-produkt" className="btn-add-product">+ Dodaj produkt</Link>
+                        )}
+                    </div>
                     {searchQuery && <p className="search-label">Wyniki dla: „{searchQuery}"</p>}
                 </div>
 
@@ -68,7 +75,7 @@ function ShopPage() {
                                         })()}
                                     </div>
                                     <span className="product-name">{product.name}</span>
-                                    <span className="product-price">{product.price} zł</span>
+                                    <span className="product-price">{Number(product.price).toFixed(2).replace('.', ',')} zł</span>
                                 </Link>
                             ))}
                         </div>

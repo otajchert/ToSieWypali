@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import './ProductDetailPage.css';
 
@@ -7,6 +8,8 @@ const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}
 
 function ProductDetailPage() {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { user, authHeader } = useAuth();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,6 +17,8 @@ function ProductDetailPage() {
     const [activePhoto, setActivePhoto] = useState(null);
     const [notice, setNotice] = useState(null);
     const [adding, setAdding] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteNotice, setDeleteNotice] = useState(null);
     const noticeTimer = useRef(null);
     const { addItem } = useCart();
 
@@ -57,6 +62,28 @@ function ProductDetailPage() {
         }
     }
 
+    async function handleDelete() {
+        if (!window.confirm('Na pewno usunąć ten produkt? Operacja jest nieodwracalna.')) return;
+        setDeleting(true);
+        try {
+            const res = await fetch(`/api/products/${id}`, {
+                method: 'DELETE',
+                headers: authHeader(),
+            });
+            if (res.ok) {
+                setDeleteNotice({ type: 'success', text: 'Produkt został usunięty.' });
+                setTimeout(() => navigate('/sklep'), 1500);
+            } else {
+                const msg = await res.text();
+                setDeleteNotice({ type: 'error', text: msg || 'Błąd usuwania produktu' });
+            }
+        } catch {
+            setError('Błąd usuwania produktu');
+        } finally {
+            setDeleting(false);
+        }
+    }
+
     if (loading) return <p className="status-text">Ładowanie...</p>;
     if (error) return <p className="status-text error">{error}</p>;
 
@@ -73,7 +100,22 @@ function ProductDetailPage() {
     return (
         <div className="detail-page">
             <div className="detail-inner">
-                <Link to="/sklep" className="breadcrumb">← Sklep</Link>
+                <div className="detail-topbar">
+                    <Link to="/sklep" className="breadcrumb">← Sklep</Link>
+                    {user?.role === 'ADMIN' && (
+                        <div className="admin-actions">
+                            <Link to={`/admin/produkt/${id}`} className="btn-admin-edit">Edytuj</Link>
+                            <button className="btn-admin-delete" onClick={handleDelete} disabled={deleting}>
+                                {deleting ? 'Usuwanie...' : 'Usuń produkt'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+                {deleteNotice && (
+                    <div className={`delete-notice delete-notice--${deleteNotice.type}`}>
+                        {deleteNotice.text}
+                    </div>
+                )}
 
                 <div className="detail-layout">
                     <div className="detail-photo">
@@ -120,18 +162,18 @@ function ProductDetailPage() {
                             </div>
                         )}
                         <h1 className="detail-name">{product.name}</h1>
-                        <p className="detail-price">{product.price} zł</p>
+                        <p className="detail-price">{Number(product.price).toFixed(2).replace('.', ',')} zł</p>
 
                         {product.description && (
                             <p className="detail-description">{product.description}</p>
                         )}
 
-                        {(product.material || product.height || product.width || product.productLength) && (
+                        {(product.weight || product.height || product.width || product.productLength) && (
                             <div className="detail-meta">
-                                {product.material && (
+                                {product.weight && (
                                     <div className="meta-row">
-                                        <span>materiał:</span>
-                                        <span>{product.material}</span>
+                                        <span>waga:</span>
+                                        <span>{product.weight}</span>
                                     </div>
                                 )}
                                 {product.height && (

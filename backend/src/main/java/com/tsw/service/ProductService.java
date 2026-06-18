@@ -4,10 +4,13 @@ import com.tsw.dto.ProductRequest;
 import com.tsw.model.Category;
 import com.tsw.model.Product;
 import com.tsw.model.ProductImage;
+import com.tsw.repository.CartItemRepository;
 import com.tsw.repository.CategoryRepository;
+import com.tsw.repository.OrderProductRepository;
 import com.tsw.repository.ProductImageRepository;
 import com.tsw.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -24,15 +27,21 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductImageRepository productImageRepository;
     private final CategoryRepository categoryRepository;
+    private final CartItemRepository cartItemRepository;
+    private final OrderProductRepository orderProductRepository;
     private final SupabaseStorageService storageService;
 
     public ProductService(ProductRepository productRepository,
                           ProductImageRepository productImageRepository,
                           CategoryRepository categoryRepository,
+                          CartItemRepository cartItemRepository,
+                          OrderProductRepository orderProductRepository,
                           SupabaseStorageService storageService) {
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.categoryRepository = categoryRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.orderProductRepository = orderProductRepository;
         this.storageService = storageService;
     }
 
@@ -47,6 +56,7 @@ public class ProductService {
     public Product create(ProductRequest req) {
         Product product = new Product();
         applyRequest(product, req);
+        product.setSku("TSW-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
         return productRepository.save(product);
     }
 
@@ -57,8 +67,13 @@ public class ProductService {
         });
     }
 
+    @Transactional
     public boolean delete(UUID id) {
         return productRepository.findById(id).map(product -> {
+            if (orderProductRepository.existsByIdProductId(id)) {
+                throw new IllegalStateException("Produkt jest częścią istniejących zamówień i nie może zostać usunięty.");
+            }
+            cartItemRepository.deleteByProductId(id);
             for (ProductImage img : product.getImages()) {
                 storageService.delete(img.getImageUrl());
             }
@@ -151,8 +166,7 @@ public class ProductService {
         product.setDescription(req.getDescription());
         product.setPrice(req.getPrice());
         product.setQtyInStock(req.getQtyInStock());
-        product.setSku(req.getSku());
-        product.setMaterial(req.getMaterial());
+        product.setWeight(req.getWeight());
         product.setHeight(req.getHeight());
         product.setWidth(req.getWidth());
         product.setProductLength(req.getProductLength());

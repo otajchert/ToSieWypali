@@ -13,7 +13,7 @@ public class ProductRequest {
     private BigDecimal price;
     private int qtyInStock;
     private String sku;
-    private String material;
+    private String weight;
     private String height;
     private String width;
     private String productLength;
@@ -29,8 +29,8 @@ public class ProductRequest {
     public void setQtyInStock(int qtyInStock) { this.qtyInStock = qtyInStock; }
     public String getSku() { return sku; }
     public void setSku(String sku) { this.sku = sku; }
-    public String getMaterial() { return material; }
-    public void setMaterial(String material) { this.material = material; }
+    public String getWeight() { return weight; }
+    public void setWeight(String weight) { this.weight = weight; }
     public String getHeight() { return height; }
     public void setHeight(String height) { this.height = height; }
     public String getWidth() { return width; }

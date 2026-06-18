@@ -76,10 +76,17 @@
     color: #fff;
 }
 
-.nav-links {
+.nav-menu {
     display: flex;
     align-items: stretch;
     gap: 2px;
+    flex-shrink: 0;
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-left: auto;
     flex-shrink: 0;
 }
@@ -157,7 +164,6 @@
     border-radius: 4px;
     font-size: 0.8rem;
     cursor: pointer;
-    margin: 0 6px;
     transition: background 0.15s;
 }
 
@@ -226,9 +232,9 @@
 }
 
 .user-menu-trigger {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 4px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
 }
 
 .user-dropdown {

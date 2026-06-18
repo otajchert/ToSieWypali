@@ -11,6 +11,29 @@
     margin-bottom: 32px;
 }
 
+.shop-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.btn-add-product {
+    display: inline-block;
+    background: #6b1e1a;
+    color: #fff;
+    padding: 9px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.btn-add-product:hover {
+    background: #8b3a3a;
+}
+
 .shop-title {
     font-family: 'Recoleta', serif;
     font-size: 2rem;
@@ -68,15 +91,15 @@
 }
 
 .product-name {
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     color: #6b1e1a;
-    font-weight: 500;
+    font-weight: 400;
 }
 
 .product-price {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #6b1e1a;
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: #c4a8a4;
 }
 
 .status-text {

@@ -1,14 +1,17 @@
 package com.tsw.service;
 
+import com.tsw.dto.OrderItemDto;
 import com.tsw.dto.OrderRequest;
 import com.tsw.model.*;
 import com.tsw.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -47,6 +50,18 @@ public class OrderService {
 
     public Optional<ShopOrder> findById(UUID id) {
         return orderRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderItemDto> getOrderItems(UUID orderId) {
+        return orderProductRepository.findByIdOrderId(orderId).stream()
+                .map(op -> new OrderItemDto(
+                        op.getProduct().getId(),
+                        op.getProduct().getName(),
+                        op.getProduct().getPhoto(),
+                        op.getQty(),
+                        op.getPrice()))
+                .collect(Collectors.toList());
     }
 
     public ShopOrder create(UUID clientId, OrderRequest req) {

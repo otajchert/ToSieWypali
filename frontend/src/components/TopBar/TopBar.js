@@ -1,22 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useCategories } from '../../context/CategoryContext';
 import './TopBar.css';
 
 function TopBar() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [categories, setCategories] = useState([]);
     const { user, logout } = useAuth();
     const { totalCount } = useCart();
+    const { categories } = useCategories();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        fetch('/api/categories')
-            .then(res => res.ok ? res.json() : [])
-            .then(data => setCategories(data))
-            .catch(() => {});
-    }, []);
 
     function handleSearch(e) {
         e.preventDefault();
@@ -36,23 +30,7 @@ function TopBar() {
             <div className="topbar-inner">
                 <Link to="/" className="logo">TSW!</Link>
 
-                <form className="search-form" onSubmit={handleSearch}>
-                    <input
-                        className="search-input"
-                        type="text"
-                        placeholder="Szukaj produktów..."
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                    />
-                    <button type="submit" className="search-btn" aria-label="Szukaj">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                    </button>
-                </form>
-
-                <div className="nav-links">
+                <div className="nav-menu">
                     <div className="nav-item">
                         <Link to="/sklep" className="nav-link">
                             Sklep
@@ -75,7 +53,25 @@ function TopBar() {
 
                     <Link to="/warsztaty" className="nav-link">Warsztaty</Link>
                     <Link to="/kreator" className="nav-link">Kreator</Link>
+                </div>
 
+                <form className="search-form" onSubmit={handleSearch}>
+                    <input
+                        className="search-input"
+                        type="text"
+                        placeholder="Szukaj produktów..."
+                        value={searchQuery}
+                        onChange={e => setSearchQuery(e.target.value)}
+                    />
+                    <button type="submit" className="search-btn" aria-label="Szukaj">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                    </button>
+                </form>
+
+                <div className="nav-actions">
                     <button className="lang-btn">EN</button>
 
                     <Link to="/koszyk" className="icon-btn cart-icon-btn" aria-label="Koszyk">
