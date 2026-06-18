@@ -14,6 +14,7 @@ import ProductFormPage from './pages/ProductFormPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { CategoryProvider } from './context/CategoryContext';
 import './App.css';
 
 function RequireAuth({ children }) {
@@ -76,7 +77,9 @@ function App() {
         <BrowserRouter>
             <AuthProvider>
                 <CartProvider>
-                    <AppRoutes />
+                    <CategoryProvider>
+                        <AppRoutes />
+                    </CategoryProvider>
                 </CartProvider>
             </AuthProvider>
         </BrowserRouter>

@@ -162,7 +162,7 @@ function ProductDetailPage() {
                             </div>
                         )}
                         <h1 className="detail-name">{product.name}</h1>
-                        <p className="detail-price">{product.price} zł</p>
+                        <p className="detail-price">{Number(product.price).toFixed(2).replace('.', ',')} zł</p>
 
                         {product.description && (
                             <p className="detail-description">{product.description}</p>

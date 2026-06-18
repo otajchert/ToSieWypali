@@ -371,7 +371,7 @@ function AccountPage() {
                                     </div>
                                     <div className="order-total">
                                         {order.orderTotal != null
-                                            ? `${Number(order.orderTotal).toFixed(2)} zł`
+                                            ? `${Number(order.orderTotal).toFixed(2).replace('.', ',')} zł`
                                             : '—'}
                                     </div>
                                 </Link>

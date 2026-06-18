@@ -1,10 +1,3 @@
--- sample categories
-INSERT IGNORE INTO category (UniqueID, parent_category_id, category_name) VALUES
-('00000000-0000-0000-0000-000000000001', NULL, 'Kubki'),
-('00000000-0000-0000-0000-000000000002', NULL, 'Miski'),
-('00000000-0000-0000-0000-000000000003', NULL, 'Wazony'),
-('00000000-0000-0000-0000-000000000004', NULL, 'Dekoracje');
-
 -- sample order statuses
 INSERT IGNORE INTO order_status (UniqueID, name) VALUES
 ('00000000-0000-0000-0000-000000000021', 'Nowe'),

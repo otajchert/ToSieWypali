@@ -139,11 +139,11 @@ function OrderDetailPage() {
                                         {item.productName}
                                     </Link>
                                     <span className="od-item-unit">
-                                        {Number(item.price).toFixed(2)} zł
+                                        {Number(item.price).toFixed(2).replace('.', ',')} zł
                                     </span>
                                     <span className="od-item-qty">× {item.qty}</span>
                                     <span className="od-item-total">
-                                        {(Number(item.price) * item.qty).toFixed(2)} zł
+                                        {(Number(item.price) * item.qty).toFixed(2).replace('.', ',')} zł
                                     </span>
                                 </div>
                             ))}
@@ -153,20 +153,20 @@ function OrderDetailPage() {
                         <div className="od-summary-row">
                             <span>Produkty</span>
                             <span>
-                                {items.reduce((sum, i) => sum + Number(i.price) * i.qty, 0).toFixed(2)} zł
+                                {items.reduce((sum, i) => sum + Number(i.price) * i.qty, 0).toFixed(2).replace('.', ',')} zł
                             </span>
                         </div>
                         {order.shippingMethod && (
                             <div className="od-summary-row">
                                 <span>Dostawa ({order.shippingMethod.name})</span>
-                                <span>{Number(order.shippingMethod.price).toFixed(2)} zł</span>
+                                <span>{Number(order.shippingMethod.price).toFixed(2).replace('.', ',')} zł</span>
                             </div>
                         )}
                         <div className="od-summary-row od-summary-total">
                             <span>Łącznie</span>
                             <span>
                                 {order.orderTotal != null
-                                    ? `${Number(order.orderTotal).toFixed(2)} zł`
+                                    ? `${Number(order.orderTotal).toFixed(2).replace('.', ',')} zł`
                                     : '—'}
                             </span>
                         </div>

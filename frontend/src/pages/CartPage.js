@@ -130,7 +130,7 @@ function CartPage() {
                                         <Link to={`/sklep/${item.productId}`} className="cart-item-name">
                                             {item.name}
                                         </Link>
-                                        <p className="cart-item-unit-price">{parseFloat(item.price).toFixed(2)} zł / szt.</p>
+                                        <p className="cart-item-unit-price">{parseFloat(item.price).toFixed(2).replace('.', ',')} zł / szt.</p>
                                         {item.qtyInStock === 0 && (
                                             <p className="cart-item-oos-label">Brak w magazynie</p>
                                         )}
@@ -153,7 +153,7 @@ function CartPage() {
                                     </div>
 
                                     <p className="cart-item-total">
-                                        {(parseFloat(item.price) * item.qty).toFixed(2)} zł
+                                        {(parseFloat(item.price) * item.qty).toFixed(2).replace('.', ',')} zł
                                     </p>
 
                                     <button
@@ -174,7 +174,7 @@ function CartPage() {
                             <h2 className="summary-title">Podsumowanie</h2>
                             <div className="summary-row">
                                 <span>Produkty ({totalQty} szt.)</span>
-                                <span>{total.toFixed(2)} zł</span>
+                                <span>{total.toFixed(2).replace('.', ',')} zł</span>
                             </div>
                             <div className="summary-row summary-shipping">
                                 <span>Dostawa</span>
@@ -183,7 +183,7 @@ function CartPage() {
                             <div className="summary-divider" />
                             <div className="summary-row summary-total">
                                 <span>Razem</span>
-                                <span>{total.toFixed(2)} zł</span>
+                                <span>{total.toFixed(2).replace('.', ',')} zł</span>
                             </div>
                             {!user && (
                                 <p className="summary-login-hint">

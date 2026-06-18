@@ -75,7 +75,7 @@ function ShopPage() {
                                         })()}
                                     </div>
                                     <span className="product-name">{product.name}</span>
-                                    <span className="product-price">{product.price} zł</span>
+                                    <span className="product-price">{Number(product.price).toFixed(2).replace('.', ',')} zł</span>
                                 </Link>
                             ))}
                         </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCategories } from '../context/CategoryContext';
 import './AdminPage.css';
 
 const STATUS_IDS = {
@@ -16,6 +17,11 @@ function AdminPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(null);
+
+    const { categories, setCategories } = useCategories();
+    const [newCatName, setNewCatName] = useState('');
+    const [catSaving, setCatSaving] = useState(false);
+    const [deleteDialog, setDeleteDialog] = useState(null); // { id, name, productCount }
 
     useEffect(() => {
         if (!user || user.role !== 'ADMIN') return;
@@ -43,6 +49,52 @@ function AdminPage() {
         } finally {
             setUpdating(null);
         }
+    }
+
+    async function addCategory(e) {
+        e.preventDefault();
+        const name = newCatName.trim();
+        if (!name) return;
+        setCatSaving(true);
+        try {
+            const res = await fetch('/api/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...authHeader() },
+                body: JSON.stringify({ categoryName: name }),
+            });
+            if (res.ok) {
+                const created = await res.json();
+                setCategories(prev => [...prev, created]);
+                setNewCatName('');
+            }
+        } finally {
+            setCatSaving(false);
+        }
+    }
+
+    async function requestDelete(cat) {
+        const res = await fetch(`/api/categories/${cat.id}`, {
+            method: 'DELETE',
+            headers: authHeader(),
+        });
+        if (res.status === 204) {
+            setCategories(prev => prev.filter(c => c.id !== cat.id));
+        } else if (res.status === 409) {
+            const data = await res.json();
+            setDeleteDialog({ id: cat.id, name: cat.categoryName, productCount: data.productCount });
+        }
+    }
+
+    async function confirmDelete() {
+        if (!deleteDialog) return;
+        const res = await fetch(`/api/categories/${deleteDialog.id}?force=true`, {
+            method: 'DELETE',
+            headers: authHeader(),
+        });
+        if (res.status === 204) {
+            setCategories(prev => prev.filter(c => c.id !== deleteDialog.id));
+        }
+        setDeleteDialog(null);
     }
 
     if (!user || user.role !== 'ADMIN') {
@@ -95,7 +147,7 @@ function AdminPage() {
                                             </td>
                                             <td className="order-total">
                                                 {order.orderTotal != null
-                                                    ? `${Number(order.orderTotal).toFixed(2)} zł`
+                                                    ? `${Number(order.orderTotal).toFixed(2).replace('.', ',')} zł`
                                                     : '—'}
                                             </td>
                                             <td className="order-shipping">
@@ -125,7 +177,63 @@ function AdminPage() {
                         </div>
                     )}
                 </section>
+
+                <section className="admin-section">
+                    <h2 className="section-title">Kategorie</h2>
+                    <div className="cat-list">
+                        {categories.length === 0 && (
+                            <p className="admin-hint">Brak kategorii.</p>
+                        )}
+                        {categories.map(cat => (
+                            <div key={cat.id} className="cat-row">
+                                <span className="cat-name">{cat.categoryName}</span>
+                                <button
+                                    className="cat-delete-btn"
+                                    onClick={() => requestDelete(cat)}
+                                    title="Usuń kategorię"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <form className="cat-add-form" onSubmit={addCategory}>
+                        <input
+                            className="cat-add-input"
+                            value={newCatName}
+                            onChange={e => setNewCatName(e.target.value)}
+                            placeholder="Nazwa nowej kategorii"
+                            required
+                        />
+                        <button className="cat-add-btn" type="submit" disabled={catSaving}>
+                            {catSaving ? 'Dodawanie...' : '+ Dodaj'}
+                        </button>
+                    </form>
+                </section>
             </div>
+
+            {deleteDialog && (
+                <div className="cat-dialog-overlay" onClick={() => setDeleteDialog(null)}>
+                    <div className="cat-dialog" onClick={e => e.stopPropagation()}>
+                        <h3 className="cat-dialog-title">Usuń kategorię</h3>
+                        <p className="cat-dialog-body">
+                            Kategoria <strong>{deleteDialog.name}</strong> jest przypisana do{' '}
+                            <strong>{deleteDialog.productCount}</strong>{' '}
+                            {deleteDialog.productCount === 1 ? 'produktu' : 'produktów'}.
+                            Produkty zachowają swoje pozostałe kategorie.
+                        </p>
+                        <div className="cat-dialog-actions">
+                            <button className="cat-dialog-cancel" onClick={() => setDeleteDialog(null)}>
+                                Anuluj
+                            </button>
+                            <button className="cat-dialog-confirm" onClick={confirmDelete}>
+                                Usuń mimo to
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

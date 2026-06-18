@@ -66,8 +66,6 @@
 }
 
 /* Read-only profile */
-.profile-view {}
-
 .profile-grid {
     display: flex;
     flex-direction: column;

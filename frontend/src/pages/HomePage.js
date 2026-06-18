@@ -43,8 +43,6 @@ function HomePage() {
                                                 : <div className="no-photo" />;
                                         })()}
                                     </div>
-                                    <span className="card-name">{product.name}</span>
-                                    <span className="card-price">{product.price} zł</span>
                                 </Link>
                             ))}
                         </div>

@@ -28,7 +28,8 @@
     border: none;
     font-family: 'Recoleta', serif;
     font-size: 0.95rem;
-    color: #6b5a4e;
+    font-weight: 500;
+    color: #6b1e1a;
     cursor: pointer;
     transition: color 0.15s, border-bottom 0.15s;
     border-bottom: 2px solid transparent;

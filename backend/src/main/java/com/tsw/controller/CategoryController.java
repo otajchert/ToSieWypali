@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -44,9 +45,22 @@ public class CategoryController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        return categoryService.delete(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<?> delete(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "false") boolean force) {
+
+        if (!categoryService.findById(id).isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (!force) {
+            long count = categoryService.countProducts(id);
+            if (count > 0) {
+                return ResponseEntity.status(409).body(Map.of("productCount", count));
+            }
+        }
+
+        categoryService.delete(id, force);
+        return ResponseEntity.noContent().build();
     }
 }

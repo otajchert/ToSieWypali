@@ -1,31 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useCategories } from '../../context/CategoryContext';
 import './TopBar.css';
 
 function TopBar() {
     const [searchQuery, setSearchQuery] = useState('');
-    const [categories, setCategories] = useState([]);
     const { user, logout } = useAuth();
     const { totalCount } = useCart();
+    const { categories } = useCategories();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        let cancelled = false;
-        function load(attempt) {
-            fetch('/api/categories')
-                .then(res => res.ok ? res.json() : Promise.reject())
-                .then(data => { if (!cancelled) setCategories(data); })
-                .catch(() => {
-                    if (!cancelled && attempt < 4) {
-                        setTimeout(() => load(attempt + 1), 2000);
-                    }
-                });
-        }
-        load(0);
-        return () => { cancelled = true; };
-    }, []);
 
     function handleSearch(e) {
         e.preventDefault();

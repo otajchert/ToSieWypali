@@ -48,46 +48,6 @@
     background: #8b3a3a;
 }
 
-.admin-header-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.admin-nav-btn {
-    padding: 9px 20px;
-    background: transparent;
-    border: 1px solid #6b5a4e;
-    color: #6b5a4e;
-    border-radius: 4px;
-    font-family: 'Recoleta', serif;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-
-.admin-nav-btn:hover {
-    background: #6b5a4e;
-    color: #fff;
-}
-
-.logout-btn {
-    padding: 9px 20px;
-    background: transparent;
-    border: 1px solid #6b1e1a;
-    color: #6b1e1a;
-    border-radius: 4px;
-    font-family: 'Recoleta', serif;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-}
-
-.logout-btn:hover {
-    background: #6b1e1a;
-    color: #fff;
-}
-
 .admin-section {
     margin-bottom: 48px;
 }
@@ -192,4 +152,165 @@
 
 .order-details-link:hover {
     border-bottom-color: #6b1e1a;
+}
+
+/* ── Category management ── */
+
+.cat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.cat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid #e8e0d8;
+    border-radius: 5px;
+    font-size: 0.92rem;
+    color: #3a2a28;
+}
+
+.cat-name {
+    flex: 1;
+}
+
+.cat-delete-btn {
+    background: none;
+    border: none;
+    color: #a0887e;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    transition: background 0.12s, color 0.12s;
+}
+
+.cat-delete-btn:hover {
+    background: #fde8e8;
+    color: #6b1e1a;
+}
+
+.cat-add-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.cat-add-input {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid #d4c8c0;
+    border-radius: 4px;
+    font-family: 'Recoleta', serif;
+    font-size: 0.92rem;
+    color: #3a2a28;
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.cat-add-input:focus {
+    border-color: #6b1e1a;
+}
+
+.cat-add-btn {
+    padding: 9px 18px;
+    background: #6b1e1a;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Recoleta', serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+}
+
+.cat-add-btn:hover:not(:disabled) {
+    background: #8b3a3a;
+}
+
+.cat-add-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Delete confirmation dialog ── */
+
+.cat-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.cat-dialog {
+    background: #fff;
+    border-radius: 8px;
+    padding: 28px 32px;
+    max-width: 420px;
+    width: calc(100% - 40px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.cat-dialog-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #6b1e1a;
+    margin: 0 0 12px;
+}
+
+.cat-dialog-body {
+    font-size: 0.93rem;
+    color: #3a2a28;
+    line-height: 1.55;
+    margin: 0 0 24px;
+}
+
+.cat-dialog-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.cat-dialog-cancel {
+    padding: 8px 18px;
+    background: transparent;
+    border: 1px solid #d4c8c0;
+    border-radius: 4px;
+    font-family: 'Recoleta', serif;
+    font-size: 0.9rem;
+    color: #6b5a4e;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.cat-dialog-cancel:hover {
+    background: #f5f0ec;
+}
+
+.cat-dialog-confirm {
+    padding: 8px 18px;
+    background: #6b1e1a;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Recoleta', serif;
+    font-size: 0.9rem;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.12s;
+}
+
+.cat-dialog-confirm:hover {
+    background: #8b3a3a;
 }

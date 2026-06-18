@@ -16,7 +16,7 @@
 }
 
 .creator-subtitle {
-    color: #6b5a4e;
+    color: #6b1e1a;
     font-size: 1rem;
     margin-bottom: 56px;
 }
@@ -67,7 +67,7 @@
 .tile-cell {
     aspect-ratio: 1;
     background: #fff;
-    border: 1px solid #c8b4a0;
+    border: 1px solid #a0c8b1;
     border-radius: 2px;
 }
 

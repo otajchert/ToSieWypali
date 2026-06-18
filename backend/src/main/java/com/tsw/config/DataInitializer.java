@@ -53,6 +53,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
         seedAdmin();
+        seedCategories();
         seedProducts();
         backfillProductWeights();
         seedTestUser();
@@ -67,6 +68,22 @@ public class DataInitializer implements CommandLineRunner {
             admin.setLastName("TSW");
             admin.setRole("ADMIN");
             clientRepository.save(admin);
+        }
+    }
+
+    private void seedCategories() {
+        if (categoryRepository.count() > 0) return;
+        String[][] cats = {
+            {"00000000-0000-0000-0000-000000000001", "Kubki"},
+            {"00000000-0000-0000-0000-000000000002", "Miski"},
+            {"00000000-0000-0000-0000-000000000003", "Wazony"},
+            {"00000000-0000-0000-0000-000000000004", "Dekoracje"},
+        };
+        for (String[] c : cats) {
+            Category cat = new Category();
+            cat.setId(UUID.fromString(c[0]));
+            cat.setCategoryName(c[1]);
+            categoryRepository.save(cat);
         }
     }
 
