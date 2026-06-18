@@ -12,6 +12,7 @@ import AccountPage from './pages/AccountPage';
 import AdminPage from './pages/AdminPage';
 import ProductFormPage from './pages/ProductFormPage';
 import OrderDetailPage from './pages/OrderDetailPage';
+import CheckoutPage from './pages/CheckoutPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { CategoryProvider } from './context/CategoryContext';
@@ -62,6 +63,9 @@ function AppRoutes() {
                     } />
                     <Route path="/admin/produkt/:id" element={
                         <RequireAdmin><ProductFormPage /></RequireAdmin>
+                    } />
+                    <Route path="/checkout" element={
+                        <RequireAuth><CheckoutPage /></RequireAuth>
                     } />
                     <Route path="/zamowienie/:id" element={
                         <RequireAuth><OrderDetailPage /></RequireAuth>

@@ -172,6 +172,18 @@ export function CartProvider({ children }) {
         }
     }
 
+    async function clearCart() {
+        if (user) {
+            await fetch(`/api/cart/${user.id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${user.token}` },
+            });
+        } else {
+            saveGuest([]);
+        }
+        setItems([]);
+    }
+
     async function updateQty(item, qty) {
         if (qty < 1) return;
         if (user) {
@@ -198,7 +210,7 @@ export function CartProvider({ children }) {
     const totalCount = items.reduce((sum, i) => sum + i.qty, 0);
 
     return (
-        <CartContext.Provider value={{ items, cartReady, addItem, removeItem, updateQty, totalCount, refreshCart }}>
+        <CartContext.Provider value={{ items, cartReady, addItem, removeItem, updateQty, totalCount, refreshCart, clearCart }}>
             {children}
         </CartContext.Provider>
     );

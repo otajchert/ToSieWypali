@@ -68,8 +68,9 @@ public class OrderService {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new IllegalArgumentException("Client not found"));
 
-        Address address = addressRepository.findById(req.getAddressId())
-                .orElseThrow(() -> new IllegalArgumentException("Address not found"));
+        Address address = req.getAddressId() != null
+                ? addressRepository.findById(req.getAddressId()).orElseThrow(() -> new IllegalArgumentException("Address not found"))
+                : null;
 
         ShippingMethod shippingMethod = shippingMethodRepository.findById(req.getShippingMethodId())
                 .orElseThrow(() -> new IllegalArgumentException("Shipping method not found"));
@@ -90,6 +91,8 @@ public class OrderService {
         order.setShippingAddress(address);
         order.setShippingMethod(shippingMethod);
         order.setOrderTotal(total);
+        orderStatusRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000021"))
+                .ifPresent(order::setOrderStatus);
         order = orderRepository.save(order);
 
         // create order lines and deduct stock

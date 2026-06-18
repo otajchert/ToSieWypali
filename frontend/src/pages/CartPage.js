@@ -190,10 +190,11 @@ function CartPage() {
                                     <Link to="/logowanie">Zaloguj się</Link>, żeby zapisać koszyk i zamawiać.
                                 </p>
                             )}
-                            <button className="btn-checkout" disabled>
-                                Złóż zamówienie
-                            </button>
-                            <p className="btn-checkout-soon">Składanie zamówień już wkrótce</p>
+                            {user ? (
+                                <Link to="/checkout" className="btn-checkout">Złóż zamówienie</Link>
+                            ) : (
+                                <button className="btn-checkout" disabled>Złóż zamówienie</button>
+                            )}
                         </div>
                     </div>
                 )}
