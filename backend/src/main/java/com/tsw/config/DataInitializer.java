@@ -2,9 +2,12 @@ package com.tsw.config;
 
 import com.tsw.model.*;
 import com.tsw.repository.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +16,9 @@ import java.util.UUID;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
+
+    @PersistenceContext
+    private EntityManager em;
 
     private final ClientRepository clientRepository;
     private final PasswordEncoder passwordEncoder;
@@ -71,7 +77,8 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    private void seedCategories() {
+    @Transactional
+    public void seedCategories() {
         if (categoryRepository.count() > 0) return;
         String[][] cats = {
             {"00000000-0000-0000-0000-000000000001", "Kubki"},
@@ -83,11 +90,12 @@ public class DataInitializer implements CommandLineRunner {
             Category cat = new Category();
             cat.setId(UUID.fromString(c[0]));
             cat.setCategoryName(c[1]);
-            categoryRepository.save(cat);
+            em.persist(cat);
         }
     }
 
-    private void seedProducts() {
+    @Transactional
+    public void seedProducts() {
         if (productRepository.count() > 0) return;
 
         Category kubki     = categoryRepository.findById(UUID.fromString("00000000-0000-0000-0000-000000000001")).orElse(null);
@@ -109,13 +117,13 @@ public class DataInitializer implements CommandLineRunner {
         kubek.setProductLength("8cm");
         kubek.setCategories(new LinkedHashSet<>());
         if (kubki != null) kubek.getCategories().add(kubki);
-        kubek = productRepository.save(kubek);
+        em.persist(kubek);
 
         ProductImage kubkImg = new ProductImage();
         kubkImg.setImageUrl("https://kriocushjyphhprzosml.supabase.co/storage/v1/object/public/products/Zrzut%20ekranu%202025-12-14%20215052.png");
         kubkImg.setSortOrder(0);
         kubkImg.setProduct(kubek);
-        productImageRepository.save(kubkImg);
+        em.persist(kubkImg);
 
         Product mydelniczka = new Product();
         mydelniczka.setId(UUID.fromString("00000000-0000-0000-0000-000000001002"));
@@ -131,13 +139,13 @@ public class DataInitializer implements CommandLineRunner {
         mydelniczka.setProductLength("13cm");
         mydelniczka.setCategories(new LinkedHashSet<>());
         if (dekoracje != null) mydelniczka.getCategories().add(dekoracje);
-        mydelniczka = productRepository.save(mydelniczka);
+        em.persist(mydelniczka);
 
         ProductImage mydelImg = new ProductImage();
         mydelImg.setImageUrl("https://kriocushjyphhprzosml.supabase.co/storage/v1/object/public/products/Zrzut%20ekranu%202025-12-16%20151924.png");
         mydelImg.setSortOrder(0);
         mydelImg.setProduct(mydelniczka);
-        productImageRepository.save(mydelImg);
+        em.persist(mydelImg);
 
         Product miska = new Product();
         miska.setId(UUID.fromString("00000000-0000-0000-0000-000000001003"));
@@ -152,7 +160,7 @@ public class DataInitializer implements CommandLineRunner {
         miska.setProductLength("16cm");
         miska.setCategories(new LinkedHashSet<>());
         if (miski != null) miska.getCategories().add(miski);
-        productRepository.save(miska);
+        em.persist(miska);
 
         Product wazon = new Product();
         wazon.setId(UUID.fromString("00000000-0000-0000-0000-000000001004"));
@@ -168,7 +176,7 @@ public class DataInitializer implements CommandLineRunner {
         wazon.setCategories(new LinkedHashSet<>());
         if (wazony != null) wazon.getCategories().add(wazony);
         if (dekoracje != null) wazon.getCategories().add(dekoracje);
-        productRepository.save(wazon);
+        em.persist(wazon);
     }
 
     private void backfillProductWeights() {
