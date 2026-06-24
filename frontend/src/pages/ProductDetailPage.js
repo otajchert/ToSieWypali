@@ -200,9 +200,9 @@ function ProductDetailPage() {
                         <div className="qty-row">
                             <span className="qty-label">Ilość</span>
                             <div className="qty-controls">
-                                <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+                                <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))} disabled={qty <= 1 || maxQty === 0}>−</button>
                                 <span className="qty-value">{qty}</span>
-                                <button className="qty-btn" onClick={() => setQty(q => Math.min(maxQty, q + 1))}>+</button>
+                                <button className="qty-btn" onClick={() => setQty(q => Math.min(maxQty, q + 1))} disabled={qty >= maxQty}>+</button>
                             </div>
                         </div>
 
