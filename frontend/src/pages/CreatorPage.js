@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import cuencaImg from './icons/cuenca.svg';
 import './CreatorPage.css';
 
 function CreatorPage() {
@@ -12,32 +13,17 @@ function CreatorPage() {
                 <div className="creator-options">
                     <Link to="/kreator/kafelki" className="creator-option">
                         <div className="creator-preview">
-                            <div className="tile-grid">
-                                {Array.from({ length: 9 }).map((_, i) => (
-                                    <div key={i} className="tile-cell" />
-                                ))}
-                            </div>
+                            <img src={cuencaImg} alt="Kafelek Cuenca" className="creator-preview-img" />
                         </div>
                         <span className="option-label">Kreator Kafelków</span>
                         <span className="option-desc">Zaprojektuj swój unikalny kafelek</span>
                     </Link>
 
                     <Link to="/kreator/kubki" className="creator-option">
-                        <div className="creator-preview">
-                            <svg className="cup-svg" viewBox="0 0 100 120" fill="none">
-                                <path
-                                    d="M20 25 Q20 15 30 15 L70 15 Q80 15 80 25 L74 95 Q74 105 64 105 L36 105 Q26 105 26 95 Z"
-                                    fill="#d4b8a8"
-                                    stroke="#8b3a3a"
-                                    strokeWidth="2"
-                                />
-                                <path
-                                    d="M74 38 Q90 38 90 55 Q90 72 74 72"
-                                    stroke="#8b3a3a"
-                                    strokeWidth="2"
-                                    fill="none"
-                                    strokeLinecap="round"
-                                />
+                        <div className="creator-preview creator-preview--empty">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#c0a898" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <line x1="3" y1="3" x2="21" y2="21"/>
                             </svg>
                         </div>
                         <span className="option-label">Kreator Kubków</span>
