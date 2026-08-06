@@ -8,6 +8,7 @@ RUN npm install
 
 COPY . .
 
+RUN CI=true npm test -- --watchAll=false
 RUN npm run build
 
 FROM nginx:alpine
