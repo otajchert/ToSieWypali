@@ -63,37 +63,10 @@
     border-radius: 4px;
 }
 
-.creator-preview--empty {
-    background: #f0ebe5;
-}
-
 /* mug miniature can have any artboard shape — show it whole */
 .creator-preview-img--contain {
     object-fit: contain;
     padding: 12%;
-}
-
-/* tile preview — no longer used but kept in case */
-
-.tile-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    width: 55%;
-}
-
-.tile-cell {
-    aspect-ratio: 1;
-    background: #fff;
-    border: 1px solid #a0c8b1;
-    border-radius: 2px;
-}
-
-/* cup preview */
-
-.cup-svg {
-    width: 42%;
-    height: auto;
 }
 
 .option-label {

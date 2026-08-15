@@ -451,13 +451,6 @@
         width: 100%;
     }
 
-    .toolbar-col {
-        width: 100%;
-        padding: 10px 0;
-        border-top: 1px solid #e8e0d8;
-        margin-top: 12px;
-    }
-
     .toolbar-strip {
         flex-direction: row;
         width: auto;

@@ -32,9 +32,16 @@ const initialDesign = () => ({
 
 const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
 
+// only filled paths become clay — outline/decor strokes are ignored
+const filledPaths = (paths) =>
+    paths.filter(path => {
+        const fill = path.userData && path.userData.style && path.userData.style.fill;
+        return fill && fill !== 'none';
+    });
+
 function collectLoops(paths) {
     const loops = [];
-    paths.forEach(path => {
+    filledPaths(paths).forEach(path => {
         SVGLoader.createShapes(path).forEach(shape => {
             const pts = shape.extractPoints(48);
             loops.push(pts.shape, ...pts.holes);
@@ -103,7 +110,7 @@ function useBodyData(url) {
 function useHandleGeometry(url) {
     const svgData = useLoader(SVGLoader, url);
     return useMemo(() => {
-        const shapes = svgData.paths.flatMap(path => SVGLoader.createShapes(path));
+        const shapes = filledPaths(svgData.paths).flatMap(path => SVGLoader.createShapes(path));
         if (!shapes.length) {
             console.warn(`Kreator kubków: brak wypełnionych kształtów w ${url}`);
             return { geometry: new THREE.BufferGeometry(), halfH: 0.1 };
