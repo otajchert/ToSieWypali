@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Warstwa_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 595.28 841.89">
+  <defs>
+    <style>
+      .st0 {
+        fill: #c0a999;
+      }
+
+      .st1 {
+        fill: #fff;
+      }
+
+      .st2 {
+        fill: none;
+        stroke: #6b1d1a;
+        stroke-width: 6px;
+        stroke-miterlimit: 10;
+      }
+    </style>
+  </defs>
+  <circle class="st0" cx="315.98" cy="478.21" r="195.66"/>
+  <circle class="st1" cx="315.98" cy="478.21" r="175.91"/>
+  <line class="st2" x1="266" y1="418" x2="366" y2="418"/>
+  <path class="st2" d="M302,418v-14h28v14"/>
+  <path class="st2" d="M278,418l10,124h56l10-124"/>
+  <line class="st2" x1="303" y1="444" x2="305" y2="516"/>
+  <line class="st2" x1="329" y1="444" x2="327" y2="516"/>
+</svg>

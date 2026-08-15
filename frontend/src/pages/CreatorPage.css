@@ -67,6 +67,12 @@
     background: #f0ebe5;
 }
 
+/* mug miniature can have any artboard shape — show it whole */
+.creator-preview-img--contain {
+    object-fit: contain;
+    padding: 12%;
+}
+
 /* tile preview — no longer used but kept in case */
 
 .tile-grid {
