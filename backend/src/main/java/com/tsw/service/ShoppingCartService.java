@@ -1,5 +1,8 @@
 package com.tsw.service;
 
+import com.tsw.exception.InsufficientStockException;
+import com.tsw.exception.InvalidQuantityException;
+import com.tsw.exception.ResourceNotFoundException;
 import com.tsw.model.CartItem;
 import com.tsw.model.Client;
 import com.tsw.model.Product;
@@ -9,6 +12,7 @@ import com.tsw.repository.ClientRepository;
 import com.tsw.repository.ProductRepository;
 import com.tsw.repository.ShoppingCartRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,36 +36,34 @@ public class ShoppingCartService {
         this.productRepository = productRepository;
     }
 
+    @Transactional(readOnly = true)
     public List<CartItem> getItems(UUID clientId) {
-        return getOrCreateCart(clientId)
+        return findCart(clientId)
                 .map(cart -> cartItemRepository.findByCartId(cart.getId()))
                 .orElse(List.of());
     }
 
+    @Transactional
     public CartItem addItem(UUID clientId, UUID productId, int qty) {
-        ShoppingCart cart = getOrCreateCart(clientId)
-                .orElseGet(() -> createCart(clientId));
-
+        validateQuantity(qty);
+        Client client = findClientForUpdate(clientId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono produktu"));
+        ShoppingCart cart = getOrCreateCart(client);
 
-        List<CartItem> existing = cartItemRepository.findByCartId(cart.getId());
-        Optional<CartItem> existingItem = existing.stream()
-                .filter(i -> i.getProduct().getId().equals(productId))
-                .findFirst();
-
+        Optional<CartItem> existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
-            int newQty = item.getQty() + qty;
+            long newQty = (long) item.getQty() + qty;
             if (newQty > product.getQtyInStock()) {
-                throw new IllegalArgumentException("Niewystarczająca ilość w magazynie");
+                throw new InsufficientStockException("Niewystarczająca ilość produktu w magazynie");
             }
-            item.setQty(newQty);
+            item.setQty((int) newQty);
             return cartItemRepository.save(item);
         }
 
         if (qty > product.getQtyInStock()) {
-            throw new IllegalArgumentException("Niewystarczająca ilość w magazynie");
+            throw new InsufficientStockException("Niewystarczająca ilość produktu w magazynie");
         }
 
         CartItem item = new CartItem();
@@ -71,45 +73,64 @@ public class ShoppingCartService {
         return cartItemRepository.save(item);
     }
 
-    public boolean removeItem(UUID clientId, UUID itemId) {
-        return cartItemRepository.findById(itemId).map(item -> {
-            if (!item.getCart().getClient().getId().equals(clientId)) {
-                return false;
-            }
-            cartItemRepository.delete(item);
-            return true;
-        }).orElse(false);
+    @Transactional
+    public void removeItem(UUID clientId, UUID itemId) {
+        Client client = findClientForUpdate(clientId);
+        ShoppingCart cart = findCart(client.getId())
+                .orElseThrow(this::cartItemNotFound);
+        CartItem item = cartItemRepository.findByIdAndCartId(itemId, cart.getId())
+                .orElseThrow(this::cartItemNotFound);
+        cartItemRepository.delete(item);
     }
 
-    public Optional<CartItem> updateItemQty(UUID clientId, UUID itemId, int qty) {
-        return cartItemRepository.findById(itemId).map(item -> {
-            if (!item.getCart().getClient().getId().equals(clientId)) {
-                return null;
-            }
-            if (qty < 1 || qty > item.getProduct().getQtyInStock()) {
-                return null;
-            }
-            item.setQty(qty);
-            return cartItemRepository.save(item);
-        });
+    @Transactional
+    public CartItem updateItemQty(UUID clientId, UUID itemId, int qty) {
+        validateQuantity(qty);
+        Client client = findClientForUpdate(clientId);
+        ShoppingCart cart = findCart(client.getId())
+                .orElseThrow(this::cartItemNotFound);
+        CartItem item = cartItemRepository.findByIdAndCartId(itemId, cart.getId())
+                .orElseThrow(this::cartItemNotFound);
+
+        if (qty > item.getProduct().getQtyInStock()) {
+            throw new InsufficientStockException("Niewystarczająca ilość produktu w magazynie");
+        }
+
+        item.setQty(qty);
+        return cartItemRepository.save(item);
     }
 
+    @Transactional
     public void clearCart(UUID clientId) {
-        getOrCreateCart(clientId).ifPresent(cart -> {
-            cartItemRepository.findByCartId(cart.getId())
-                    .forEach(cartItemRepository::delete);
-        });
+        Client client = findClientForUpdate(clientId);
+        findCart(client.getId())
+                .ifPresent(cart -> cartItemRepository.deleteAllByCartId(cart.getId()));
     }
 
-    private Optional<ShoppingCart> getOrCreateCart(UUID clientId) {
+    private Optional<ShoppingCart> findCart(UUID clientId) {
         return cartRepository.findByClientId(clientId);
     }
 
-    private ShoppingCart createCart(UUID clientId) {
-        Client client = clientRepository.findById(clientId)
-                .orElseThrow(() -> new IllegalArgumentException("Client not found"));
-        ShoppingCart cart = new ShoppingCart();
-        cart.setClient(client);
-        return cartRepository.save(cart);
+    private ShoppingCart getOrCreateCart(Client client) {
+        return findCart(client.getId()).orElseGet(() -> {
+            ShoppingCart cart = new ShoppingCart();
+            cart.setClient(client);
+            return cartRepository.save(cart);
+        });
+    }
+
+    private Client findClientForUpdate(UUID clientId) {
+        return clientRepository.findByIdForUpdate(clientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono klienta"));
+    }
+
+    private void validateQuantity(int qty) {
+        if (qty <= 0) {
+            throw new InvalidQuantityException("Ilość musi być większa od zera");
+        }
+    }
+
+    private ResourceNotFoundException cartItemNotFound() {
+        return new ResourceNotFoundException("Nie znaleziono pozycji koszyka");
     }
 }

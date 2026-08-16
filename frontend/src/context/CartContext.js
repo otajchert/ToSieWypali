@@ -15,6 +15,18 @@ function saveGuest(items) {
     localStorage.setItem(GUEST_KEY, JSON.stringify(items));
 }
 
+async function readErrorMessage(response, fallback) {
+    const text = await response.text();
+    if (!text) return fallback;
+
+    try {
+        const body = JSON.parse(text);
+        return body.detail || body.message || fallback;
+    } catch {
+        return text;
+    }
+}
+
 function normalizeItem(si) {
     const p = si.product;
     return {
@@ -34,9 +46,9 @@ export function CartProvider({ children }) {
     const [cartReady, setCartReady] = useState(false);
     const prevUserIdRef = useRef(null);
 
-    async function fetchFromServer(userId, token) {
+    async function fetchFromServer(token) {
         try {
-            const res = await fetch(`/api/cart/${userId}`, {
+            const res = await fetch('/api/cart', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             if (!res.ok) return null;
@@ -46,12 +58,12 @@ export function CartProvider({ children }) {
         }
     }
 
-    async function mergeGuestToServer(userId, token) {
+    async function mergeGuestToServer(token) {
         const guests = readGuest();
         if (guests.length === 0) return;
         for (const item of guests) {
             try {
-                await fetch(`/api/cart/${userId}/items`, {
+                await fetch('/api/cart/items', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -66,7 +78,7 @@ export function CartProvider({ children }) {
 
     async function refreshCart() {
         if (!user) return null;
-        const fresh = await fetchFromServer(user.id, user.token);
+        const fresh = await fetchFromServer(user.token);
         if (fresh) setItems(fresh);
         return fresh;
     }
@@ -84,26 +96,26 @@ export function CartProvider({ children }) {
 
         (async () => {
             if (isNewLogin) {
-                await mergeGuestToServer(user.id, user.token);
+                await mergeGuestToServer(user.token);
             }
-            const fresh = await fetchFromServer(user.id, user.token);
+            const fresh = await fetchFromServer(user.token);
             if (fresh) setItems(fresh);
             setCartReady(true);
         })();
-    }, [user?.id]); // intentionally omits functions — they'd change every render
+    }, [user?.id, user?.token]); // intentionally omits functions — they'd change every render
 
     // Poll every 30s and refresh on window focus for cross-device sync
     useEffect(() => {
         if (!user) return;
-        const { id: userId, token } = user;
+        const { token } = user;
 
         const poll = setInterval(async () => {
-            const fresh = await fetchFromServer(userId, token);
+            const fresh = await fetchFromServer(token);
             if (fresh) setItems(fresh);
         }, 30000);
 
         const onFocus = async () => {
-            const fresh = await fetchFromServer(userId, token);
+            const fresh = await fetchFromServer(token);
             if (fresh) setItems(fresh);
         };
         window.addEventListener('focus', onFocus);
@@ -112,11 +124,11 @@ export function CartProvider({ children }) {
             clearInterval(poll);
             window.removeEventListener('focus', onFocus);
         };
-    }, [user?.id]); // intentionally omits functions — they'd change every render
+    }, [user?.id, user?.token]); // intentionally omits functions — they'd change every render
 
     async function addItem(product, qty) {
         if (user) {
-            const res = await fetch(`/api/cart/${user.id}/items`, {
+            const res = await fetch('/api/cart/items', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -125,10 +137,10 @@ export function CartProvider({ children }) {
                 body: JSON.stringify({ productId: product.id, qty }),
             });
             if (!res.ok) {
-                const msg = await res.text();
+                const msg = await readErrorMessage(res, 'Błąd dodawania do koszyka');
                 throw new Error(msg || 'Błąd dodawania do koszyka');
             }
-            const fresh = await fetchFromServer(user.id, user.token);
+            const fresh = await fetchFromServer(user.token);
             if (fresh) setItems(fresh);
         } else {
             const current = readGuest();
@@ -160,7 +172,7 @@ export function CartProvider({ children }) {
 
     async function removeItem(item) {
         if (user) {
-            await fetch(`/api/cart/${user.id}/items/${item.id}`, {
+            await fetch(`/api/cart/items/${item.id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${user.token}` },
             });
@@ -174,7 +186,7 @@ export function CartProvider({ children }) {
 
     async function clearCart() {
         if (user) {
-            await fetch(`/api/cart/${user.id}`, {
+            await fetch('/api/cart', {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${user.token}` },
             });
@@ -187,7 +199,7 @@ export function CartProvider({ children }) {
     async function updateQty(item, qty) {
         if (qty < 1) return;
         if (user) {
-            const res = await fetch(`/api/cart/${user.id}/items/${item.id}`, {
+            const res = await fetch(`/api/cart/items/${item.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

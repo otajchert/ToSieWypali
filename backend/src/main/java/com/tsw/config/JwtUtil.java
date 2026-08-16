@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 
 @Component
 public class JwtUtil {
@@ -21,10 +22,9 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generate(String email, String role) {
+    public String generate(UUID clientId) {
         return Jwts.builder()
-                .subject(email)
-                .claim("role", role)
+                .subject(clientId.toString())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key())
@@ -39,20 +39,4 @@ public class JwtUtil {
                 .getPayload();
     }
 
-    public boolean isValid(String token) {
-        try {
-            parse(token);
-            return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            return false;
-        }
-    }
-
-    public String getEmail(String token) {
-        return parse(token).getSubject();
-    }
-
-    public String getRole(String token) {
-        return parse(token).get("role", String.class);
-    }
 }

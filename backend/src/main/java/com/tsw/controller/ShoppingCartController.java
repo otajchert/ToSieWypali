@@ -1,16 +1,20 @@
 package com.tsw.controller;
 
+import com.tsw.config.AuthenticatedClient;
+import com.tsw.dto.AddCartItemRequest;
+import com.tsw.dto.UpdateCartItemQuantityRequest;
 import com.tsw.model.CartItem;
 import com.tsw.service.ShoppingCartService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/cart/{clientId}")
+@RequestMapping("/api/cart")
 public class ShoppingCartController {
 
     private final ShoppingCartService cartService;
@@ -20,43 +24,35 @@ public class ShoppingCartController {
     }
 
     @GetMapping
-    public List<CartItem> getItems(@PathVariable UUID clientId) {
-        return cartService.getItems(clientId);
+    public List<CartItem> getItems(@AuthenticationPrincipal AuthenticatedClient client) {
+        return cartService.getItems(client.id());
     }
 
-    // body: { "productId": "uuid", "qty": 2 }
     @PostMapping("/items")
-    public ResponseEntity<?> addItem(@PathVariable UUID clientId, @RequestBody Map<String, Object> body) {
-        try {
-            UUID productId = UUID.fromString((String) body.get("productId"));
-            int qty = (int) body.get("qty");
-            return ResponseEntity.ok(cartService.addItem(clientId, productId, qty));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<CartItem> addItem(@AuthenticationPrincipal AuthenticatedClient client,
+                                            @Valid @RequestBody AddCartItemRequest request) {
+        CartItem item = cartService.addItem(client.id(), request.productId(), request.qty());
+        return ResponseEntity.ok(item);
     }
 
     @DeleteMapping("/items/{itemId}")
-    public ResponseEntity<Void> removeItem(@PathVariable UUID clientId, @PathVariable UUID itemId) {
-        return cartService.removeItem(clientId, itemId)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+    public ResponseEntity<Void> removeItem(@AuthenticationPrincipal AuthenticatedClient client,
+                                           @PathVariable UUID itemId) {
+        cartService.removeItem(client.id(), itemId);
+        return ResponseEntity.noContent().build();
     }
 
-    // body: { "qty": 3 }
     @PutMapping("/items/{itemId}")
-    public ResponseEntity<?> updateQty(@PathVariable UUID clientId,
-                                       @PathVariable UUID itemId,
-                                       @RequestBody Map<String, Integer> body) {
-        int qty = body.get("qty");
-        return cartService.updateItemQty(clientId, itemId, qty)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<CartItem> updateQty(@AuthenticationPrincipal AuthenticatedClient client,
+                                               @PathVariable UUID itemId,
+                                               @Valid @RequestBody UpdateCartItemQuantityRequest request) {
+        CartItem item = cartService.updateItemQty(client.id(), itemId, request.qty());
+        return ResponseEntity.ok(item);
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> clearCart(@PathVariable UUID clientId) {
-        cartService.clearCart(clientId);
+    public ResponseEntity<Void> clearCart(@AuthenticationPrincipal AuthenticatedClient client) {
+        cartService.clearCart(client.id());
         return ResponseEntity.noContent().build();
     }
 }

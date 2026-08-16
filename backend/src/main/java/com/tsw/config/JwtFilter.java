@@ -1,5 +1,7 @@
 package com.tsw.config;
 
+import com.tsw.repository.ClientRepository;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,14 +14,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final ClientRepository clientRepository;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    public JwtFilter(JwtUtil jwtUtil, ClientRepository clientRepository) {
         this.jwtUtil = jwtUtil;
+        this.clientRepository = clientRepository;
     }
 
     @Override
@@ -28,13 +33,22 @@ public class JwtFilter extends OncePerRequestFilter {
         String header = req.getHeader("Authorization");
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
-            if (jwtUtil.isValid(token)) {
-                String email = jwtUtil.getEmail(token);
-                String role = jwtUtil.getRole(token);
-                var auth = new UsernamePasswordAuthenticationToken(
-                        email, null, List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                );
-                SecurityContextHolder.getContext().setAuthentication(auth);
+            try {
+                String subject = jwtUtil.parse(token).getSubject();
+                if (subject != null) {
+                    UUID clientId = UUID.fromString(subject);
+                    clientRepository.findById(clientId).ifPresent(client -> {
+                        AuthenticatedClient principal = new AuthenticatedClient(client.getId());
+                        var authentication = new UsernamePasswordAuthenticationToken(
+                                principal,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + client.getRole()))
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    });
+                }
+            } catch (JwtException | IllegalArgumentException ignored) {
+                SecurityContextHolder.clearContext();
             }
         }
         chain.doFilter(req, res);

@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState } from 'react';
 
 const AuthContext = createContext(null);
+const AUTH_KEY = 'tsw_auth_v2';
+const LEGACY_AUTH_KEY = 'tsw_auth';
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(() => {
         try {
-            const stored = localStorage.getItem('tsw_auth');
+            const stored = localStorage.getItem(AUTH_KEY);
+            localStorage.removeItem(LEGACY_AUTH_KEY);
             return stored ? JSON.parse(stored) : null;
         } catch {
             return null;
@@ -13,12 +16,12 @@ export function AuthProvider({ children }) {
     });
 
     function login(authData) {
-        localStorage.setItem('tsw_auth', JSON.stringify(authData));
+        localStorage.setItem(AUTH_KEY, JSON.stringify(authData));
         setUser(authData);
     }
 
     function logout() {
-        localStorage.removeItem('tsw_auth');
+        localStorage.removeItem(AUTH_KEY);
         setUser(null);
     }
 
