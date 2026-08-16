@@ -7,17 +7,17 @@ import './MugCreatorPage.css';
 
 const iconUrl = (name, state) => `${process.env.PUBLIC_URL}/icons/${name}-${state}.svg`;
 
-const SVG_REF_SIZE   = 512;                       // artboard size shared by all part SVGs
-const WORLD_SIZE     = 1.6;                       // world units the artboard maps to
+const SVG_REF_SIZE   = 512;                       
+const WORLD_SIZE     = 1.6;                       
 const PX_TO_WORLD    = WORLD_SIZE / SVG_REF_SIZE;
-const WALL           = 0.055;                     // cup wall thickness
-const HANDLE_DEPTH   = 45;                        // extrusion depth in SVG px
-const HANDLE_OVERLAP = 0.07;                      // how deep the handle sinks into the wall
+const WALL           = 0.055;                     // wall thickness
+const HANDLE_DEPTH   = 45;                        // depth of extrusion
+const HANDLE_OVERLAP = 0.07;                      // overlap space between handle and cup wall
 const MAX_HANDLES    = 4;
 const MAX_UNDO       = 10;
 const PROFILE_STEPS  = 40;
-const DRAG_THETA     = 0.012;                     // rad per px of horizontal drag
-const DRAG_HEIGHT    = 0.004;                     // height fraction per px of vertical drag
+const DRAG_THETA     = 0.012;                     
+const DRAG_HEIGHT    = 0.004;                     
 
 const PALETTE = ['#f5e8c0', '#8b1a2a', '#1a2a6b', '#e8c84a', '#5580c8'];
 

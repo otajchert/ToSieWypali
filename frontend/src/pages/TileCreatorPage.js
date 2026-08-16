@@ -155,8 +155,6 @@ function TileCreatorPage() {
 
     useEffect(() => {
         if (!canvasRef.current) return;
-        // willReadFrequently tells the browser this canvas will be read back via
-        // getImageData frequently, preventing GPU-side caching that causes stale reads
         const ctx = canvasRef.current.getContext('2d', { willReadFrequently: true });
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
