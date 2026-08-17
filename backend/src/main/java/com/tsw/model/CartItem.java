@@ -2,10 +2,18 @@ package com.tsw.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Check;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cart_item")
+@Table(
+        name = "cart_item",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_cart_item_cart_product",
+                columnNames = {"cart_id", "product_id"}
+        )
+)
+@Check(name = "chk_cart_item_qty_positive", constraints = "qty > 0")
 public class CartItem {
 
     @Id
