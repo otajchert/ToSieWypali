@@ -24,14 +24,14 @@ public class SupabaseStorageService {
             @Value("${supabase.url}") String supabaseUrl,
             @Value("${supabase.key}") String serviceKey,
             @Value("${supabase.bucket:products}") String bucket) {
-        this.supabaseUrl = supabaseUrl;
+        String baseUrl = supabaseUrl.trim().replaceAll("/+$", "");
+        this.supabaseUrl = baseUrl.replaceFirst("/rest/v1$", "");
         this.serviceKey = serviceKey;
         this.bucket = bucket;
     }
 
     /**
-     * Uploads a file to Supabase Storage and returns its public URL.
-     * The bucket must be set to Public in the Supabase dashboard.
+     * Uploads to Supabase 
      */
     public String upload(MultipartFile file, String objectPath) throws IOException {
         String contentType = file.getContentType() != null
@@ -53,8 +53,8 @@ public class SupabaseStorageService {
     }
 
     /**
-     * Deletes a file from Supabase Storage given its public URL.
-     * Silently ignores failures so that a missing file never breaks a delete request.
+     * Deletes from Supabase 
+     * ignores failures so that a missing file never breaks a delete request
      */
     public void delete(String publicUrl) {
         if (publicUrl == null) return;
