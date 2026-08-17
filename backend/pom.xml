@@ -18,6 +18,7 @@
     
     <properties>
         <java.version>22</java.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
     </properties>
     
     <dependencies>
@@ -83,8 +84,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>mysql</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
