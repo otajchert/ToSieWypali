@@ -41,8 +41,8 @@ class SmokeTest {
     }
 
     @Test
-    void protectedEndpointRejectsAnonymousRequest() throws Exception {
-        mockMvc.perform(get("/api/orders"))
-                .andExpect(status().is4xxClientError());
+    void meEndpointRejectsAnonymousRequest() throws Exception {
+        mockMvc.perform(get("/api/me"))
+                .andExpect(status().isUnauthorized());
     }
 }
