@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Warstwa_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 595.28 841.89">
+  <!-- Generator: Adobe Illustrator 29.7.1, SVG Export Plug-In . SVG Version: 2.1.1 Build 8)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: none;
+        stroke: #23102c;
+        stroke-miterlimit: 10;
+      }
+
+      .st1 {
+        fill: #fff;
+      }
+
+      .st2 {
+        fill: #f9f7f2;
+      }
+
+      .st3 {
+        fill: #6b1d1a;
+        font-family: Recoleta-Medium, Recoleta;
+        font-size: 272.33px;
+        font-weight: 500;
+      }
+    </style>
+  </defs>
+  <path class="st2" d="M315.98,282.54c108.06,0,195.65,87.6,195.65,195.67s-87.59,195.68-195.65,195.68-195.66-87.61-195.66-195.68,87.6-195.67,195.66-195.67Z"/>
+  <path class="st1" d="M315.98,302.35c97.15,0,175.91,78.74,175.91,175.86s-78.76,175.87-175.91,175.87-175.91-78.74-175.91-175.87,78.76-175.86,175.91-175.86Z"/>
+  <path class="st0" d="M239.21,590.09"/>
+  <text class="st3" transform="translate(222.46 579.27) scale(1.13 1)"><tspan x="0" y="0">T</tspan></text>
+</svg>

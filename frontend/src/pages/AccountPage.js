@@ -35,7 +35,7 @@ function AccountPage() {
     const [loadingOrders, setLoadingOrders] = useState(true);
 
     const fetchProfile = useCallback(() => {
-        fetch(`/api/clients/${user.id}`, { headers: authHeader() })
+        fetch('/api/me', { headers: authHeader() })
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (!data) return;
@@ -51,7 +51,7 @@ function AccountPage() {
     }, [user]);
 
     const fetchAddresses = useCallback(() => {
-        fetch(`/api/clients/${user.id}/addresses`, { headers: authHeader() })
+        fetch('/api/me/addresses', { headers: authHeader() })
             .then(res => res.ok ? res.json() : [])
             .then(setAddresses)
             .catch(() => setAddresses([]));
@@ -61,7 +61,7 @@ function AccountPage() {
         if (!user) return;
         fetchProfile();
         fetchAddresses();
-        fetch(`/api/orders/client/${user.id}`, { headers: authHeader() })
+        fetch('/api/me/orders', { headers: authHeader() })
             .then(res => res.ok ? res.json() : [])
             .then(setOrders)
             .catch(() => setOrders([]))
@@ -74,7 +74,7 @@ function AccountPage() {
         setProfileError('');
         setSavingProfile(true);
         try {
-            const res = await fetch(`/api/clients/${user.id}`, {
+            const res = await fetch('/api/me', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', ...authHeader() },
                 body: JSON.stringify(profileForm),
@@ -114,7 +114,7 @@ function AccountPage() {
     }
 
     async function deleteAddress(addressId) {
-        await fetch(`/api/clients/${user.id}/addresses/${addressId}`, {
+        await fetch(`/api/me/addresses/${addressId}`, {
             method: 'DELETE',
             headers: authHeader(),
         });
@@ -122,7 +122,7 @@ function AccountPage() {
     }
 
     async function setDefaultAddress(addressId) {
-        await fetch(`/api/clients/${user.id}/addresses/${addressId}/default`, {
+        await fetch(`/api/me/addresses/${addressId}/default`, {
             method: 'PUT',
             headers: authHeader(),
         });
@@ -145,7 +145,7 @@ function AccountPage() {
 
     async function saveEditAddress(addressId) {
         setAddrError('');
-        const res = await fetch(`/api/clients/${user.id}/addresses/${addressId}`, {
+        const res = await fetch(`/api/me/addresses/${addressId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', ...authHeader() },
             body: JSON.stringify(editAddrForm),
@@ -161,7 +161,7 @@ function AccountPage() {
     async function submitAddAddress(e) {
         e.preventDefault();
         setAddrError('');
-        const res = await fetch(`/api/clients/${user.id}/addresses`, {
+        const res = await fetch('/api/me/addresses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...authHeader() },
             body: JSON.stringify(addForm),

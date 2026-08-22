@@ -30,7 +30,7 @@ public class AuthController {
         return clientService.findByEmail(req.getEmail())
                 .filter(c -> passwordEncoder.matches(req.getPassword(), c.getPassword()))
                 .map(c -> {
-                    String token = jwtUtil.generate(c.getEmail(), c.getRole());
+                    String token = jwtUtil.generate(c.getId());
                     return ResponseEntity.ok((Object) new AuthResponse(token, c.getId(), c.getEmail(), c.getRole()));
                 })
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nieprawidłowy email lub hasło"));
@@ -40,7 +40,7 @@ public class AuthController {
     public ResponseEntity<?> register(@RequestBody ClientRequest req) {
         try {
             Client c = clientService.register(req);
-            String token = jwtUtil.generate(c.getEmail(), c.getRole());
+            String token = jwtUtil.generate(c.getId());
             return ResponseEntity.ok(new AuthResponse(token, c.getId(), c.getEmail(), c.getRole()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

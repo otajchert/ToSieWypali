@@ -1,0 +1,291 @@
+.mug-creator-page {
+    padding: 36px 24px 56px;
+}
+
+.mug-workspace {
+    display: flex;
+    align-items: flex-start;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+/* ── 3D viewport ── */
+
+.mug-canvas-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.mug-canvas-frame {
+    position: relative;
+    width: 100%;
+    max-width: 680px;
+    aspect-ratio: 1;
+    padding: 10px;
+    background: #e8e0d8;
+    border: 2px solid #c0a898;
+    border-radius: 6px;
+}
+
+.mug-canvas-inner {
+    width: 100%;
+    height: 100%;
+    background: #faf3ea;
+    touch-action: none;
+}
+
+.mug-canvas-hint {
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: #6b5a4e;
+    letter-spacing: 0.05em;
+}
+
+.mug-note {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #6b1e1a;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    z-index: 5;
+    animation: mug-note-in 0.2s ease;
+}
+
+@keyframes mug-note-in {
+    from { opacity: 0; transform: translate(-50%, -6px); }
+    to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ── Parts strip ── */
+
+.mug-parts-strip {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 2px 14px 0;
+}
+
+.mug-part-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background: #f0efec;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: border-color 0.15s, transform 0.1s;
+}
+
+.mug-part-btn:hover { border-color: #c0a898; }
+.mug-part-btn.mug-part-active { border-color: #6b1e1a; }
+
+.mug-part-img {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    display: block;
+}
+
+.mug-strip-divider {
+    width: 36px;
+    height: 1px;
+    background: #d8cec4;
+}
+
+.mug-util-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+/* icon artboards are A4 with a small centered circle — oversize the img so
+   the visible circle matches the 72px part buttons */
+.mug-util-img {
+    width: 142px;
+    height: 142px;
+    flex-shrink: 0;
+    object-fit: contain;
+    transform: translate(-3px, -10px);
+    pointer-events: none;
+}
+
+/* ── Info panel ── */
+
+.mug-info-panel {
+    width: 300px;
+    flex-shrink: 0;
+    padding-left: 24px;
+    position: sticky;
+    top: 24px;
+    align-self: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.mug-info-title {
+    font-family: 'Recoleta', serif;
+    font-size: 2rem;
+    color: #6b1e1a;
+    line-height: 1.15;
+}
+
+.mug-info-desc {
+    font-size: 0.875rem;
+    color: #6b5a4e;
+    line-height: 1.55;
+}
+
+.mug-palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.mug-swatch {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.mug-swatch:hover { transform: scale(1.1); }
+
+.mug-swatch.mug-swatch-active {
+    box-shadow: 0 0 0 3px #faf7f4, 0 0 0 5px #6b1e1a;
+}
+
+.mug-price {
+    font-family: 'Recoleta', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #6b1e1a;
+}
+
+.mug-add-to-cart-btn {
+    width: 100%;
+    padding: 15px;
+    background: #6b1e1a;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Recoleta', serif;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mug-add-to-cart-btn:hover { background: #8b3a3a; }
+
+.mug-bottom-btn {
+    width: 100%;
+    padding: 10px 8px;
+    border: 2px solid #e8e0d8;
+    border-radius: 6px;
+    background: #fff;
+    color: #6b1e1a;
+    font-family: 'Recoleta', serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.mug-bottom-btn:hover {
+    border-color: #c1613a;
+    color: #c1613a;
+}
+
+/* ── Small screen message ── */
+
+.mug-too-small-msg {
+    min-height: calc(100vh - 140px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 32px;
+    gap: 20px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.mug-too-small-msg h2 {
+    font-family: 'Recoleta', serif;
+    font-size: 1.9rem;
+    color: #6b1e1a;
+}
+
+.mug-too-small-msg p {
+    font-size: 1rem;
+    color: #6b5a4e;
+    line-height: 1.65;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 960px) {
+    .mug-workspace {
+        flex-wrap: wrap;
+    }
+
+    .mug-canvas-area {
+        flex: 1 1 100%;
+        align-items: center;
+    }
+
+    .mug-canvas-frame {
+        max-width: 480px;
+    }
+
+    .mug-parts-strip {
+        flex-direction: row;
+        width: 100%;
+        align-self: auto;
+        padding: 12px 0;
+        margin-top: 12px;
+        border-top: 1px solid #e8e0d8;
+        justify-content: center;
+    }
+
+    .mug-strip-divider {
+        width: 1px;
+        height: 36px;
+    }
+
+    .mug-info-panel {
+        width: 100%;
+        padding-left: 0;
+        position: static;
+        max-width: 480px;
+        margin: 0 auto;
+    }
+}

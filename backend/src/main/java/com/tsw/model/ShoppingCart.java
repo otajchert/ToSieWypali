@@ -4,7 +4,10 @@ import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "shopping_cart")
+@Table(
+        name = "shopping_cart",
+        uniqueConstraints = @UniqueConstraint(name = "uk_shopping_cart_client", columnNames = "client_id")
+)
 public class ShoppingCart {
 
     @Id
@@ -12,7 +15,7 @@ public class ShoppingCart {
     @Column(name = "UniqueID")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 

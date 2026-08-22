@@ -13,6 +13,8 @@ import AdminPage from './pages/AdminPage';
 import ProductFormPage from './pages/ProductFormPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import CheckoutPage from './pages/CheckoutPage';
+import TileCreatorPage from './pages/TileCreatorPage';
+import MugCreatorPage from './pages/MugCreatorPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { CategoryProvider } from './context/CategoryContext';
@@ -49,6 +51,8 @@ function AppRoutes() {
                     <Route path="/sklep" element={<ShopPage />} />
                     <Route path="/sklep/:id" element={<ProductDetailPage />} />
                     <Route path="/kreator" element={<CreatorPage />} />
+                    <Route path="/kreator/kafelki" element={<TileCreatorPage />} />
+                    <Route path="/kreator/kubki" element={<MugCreatorPage />} />
                     <Route path="/warsztaty" element={<WorkshopsPage />} />
                     <Route path="/koszyk" element={<CartPage />} />
                     <Route path="/logowanie" element={<LoginPage />} />
