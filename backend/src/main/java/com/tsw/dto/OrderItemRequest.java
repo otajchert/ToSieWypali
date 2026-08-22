@@ -1,11 +1,16 @@
 package com.tsw.dto;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+
 import java.util.UUID;
 
-// one line in an order - which product and how many
 public class OrderItemRequest {
 
+    @NotNull(message = "Produkt jest wymagany")
     private UUID productId;
+
+    @Positive(message = "Ilość musi być większa od zera")
     private int qty;
 
     public UUID getProductId() { return productId; }

@@ -1,15 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getOrderStatusOptions } from '../orderStatuses';
 import './OrderDetailPage.css';
-
-const STATUS_IDS = {
-    'Nowe': '00000000-0000-0000-0000-000000000021',
-    'W realizacji': '00000000-0000-0000-0000-000000000022',
-    'Wyslane': '00000000-0000-0000-0000-000000000023',
-    'Dostarczone': '00000000-0000-0000-0000-000000000024',
-    'Anulowane': '00000000-0000-0000-0000-000000000025',
-};
 
 const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}`);
 
@@ -27,9 +20,10 @@ function OrderDetailPage() {
 
     useEffect(() => {
         if (!user) return;
+        const orderPath = isAdmin ? `/api/orders/${id}` : `/api/me/orders/${id}`;
         Promise.all([
-            fetch(`/api/orders/${id}`, { headers: authHeader() }),
-            fetch(`/api/orders/${id}/items`, { headers: authHeader() }),
+            fetch(orderPath, { headers: authHeader() }),
+            fetch(`${orderPath}/items`, { headers: authHeader() }),
         ])
             .then(([orderRes, itemsRes]) => {
                 if (!orderRes.ok) throw new Error('Nie znaleziono zamówienia');
@@ -43,8 +37,7 @@ function OrderDetailPage() {
             .finally(() => setLoading(false));
     }, [id, user]);
 
-    async function changeStatus(statusName) {
-        const statusId = STATUS_IDS[statusName];
+    async function changeStatus(statusId) {
         if (!statusId) return;
         setUpdating(true);
         try {
@@ -93,12 +86,15 @@ function OrderDetailPage() {
                         {isAdmin ? (
                             <select
                                 className="od-status-select"
-                                value={order.orderStatus?.name || 'Nowe'}
+                                value={order.orderStatus?.id || ''}
                                 onChange={e => changeStatus(e.target.value)}
                                 disabled={updating}
                             >
-                                {Object.keys(STATUS_IDS).map(s => (
-                                    <option key={s} value={s}>{s}</option>
+                                {!order.orderStatus && (
+                                    <option value="" disabled>Wybierz status</option>
+                                )}
+                                {getOrderStatusOptions(order.orderStatus?.id).map(status => (
+                                    <option key={status.id} value={status.id}>{status.label}</option>
                                 ))}
                             </select>
                         ) : (

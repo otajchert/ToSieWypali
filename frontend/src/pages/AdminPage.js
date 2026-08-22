@@ -2,15 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCategories } from '../context/CategoryContext';
+import { getOrderStatusOptions } from '../orderStatuses';
 import './AdminPage.css';
-
-const STATUS_IDS = {
-    'Nowe': '00000000-0000-0000-0000-000000000021',
-    'W realizacji': '00000000-0000-0000-0000-000000000022',
-    'Wyslane': '00000000-0000-0000-0000-000000000023',
-    'Dostarczone': '00000000-0000-0000-0000-000000000024',
-    'Anulowane': '00000000-0000-0000-0000-000000000025',
-};
 
 function AdminPage() {
     const { user, authHeader } = useAuth();
@@ -32,8 +25,7 @@ function AdminPage() {
             .finally(() => setLoading(false));
     }, [user]);
 
-    async function changeStatus(orderId, statusName) {
-        const statusId = STATUS_IDS[statusName];
+    async function changeStatus(orderId, statusId) {
         if (!statusId) return;
         setUpdating(orderId);
         try {
@@ -156,12 +148,15 @@ function AdminPage() {
                                             <td>
                                                 <select
                                                     className="status-select"
-                                                    value={order.orderStatus?.name || 'Nowe'}
+                                                    value={order.orderStatus?.id || ''}
                                                     onChange={e => changeStatus(order.id, e.target.value)}
                                                     disabled={updating === order.id}
                                                 >
-                                                    {Object.keys(STATUS_IDS).map(s => (
-                                                        <option key={s} value={s}>{s}</option>
+                                                    {!order.orderStatus && (
+                                                        <option value="" disabled>Wybierz status</option>
+                                                    )}
+                                                    {getOrderStatusOptions(order.orderStatus?.id).map(status => (
+                                                        <option key={status.id} value={status.id}>{status.label}</option>
                                                     ))}
                                                 </select>
                                             </td>

@@ -1,6 +1,5 @@
 # Java / Maven
 target/
-!.mvn/wrapper/maven-wrapper.jar
 *.class
 *.jar
 *.war
@@ -10,7 +9,6 @@ target/
 .project
 .settings/
 bin/
-.mvn/
 
 # VS Code
 .vscode/*

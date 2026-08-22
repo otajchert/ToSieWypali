@@ -30,7 +30,7 @@ function CheckoutPage() {
         };
 
         try {
-            const res = await fetch(`/api/orders/client/${user.id}`, {
+            const res = await fetch('/api/me/orders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

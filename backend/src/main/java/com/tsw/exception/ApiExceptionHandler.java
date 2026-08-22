@@ -50,6 +50,11 @@ public class ApiExceptionHandler {
         return problem(HttpStatus.CONFLICT, "Niewystarczający stan magazynowy", exception.getMessage());
     }
 
+    @ExceptionHandler(InvalidOrderStatusTransitionException.class)
+    public ProblemDetail handleInvalidOrderStatusTransition(InvalidOrderStatusTransitionException exception) {
+        return problem(HttpStatus.CONFLICT, "Niedozwolona zmiana statusu", exception.getMessage());
+    }
+
     private ProblemDetail problem(HttpStatus status, String title, String detail) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setTitle(title);

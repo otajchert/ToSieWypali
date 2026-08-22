@@ -31,15 +31,6 @@ public class ClientController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody ClientRequest req) {
-        try {
-            return ResponseEntity.ok(clientService.register(req));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable UUID id, @RequestBody ClientRequest req) {
         try {

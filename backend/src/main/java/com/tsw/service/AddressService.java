@@ -9,6 +9,7 @@ import com.tsw.repository.AddressRepository;
 import com.tsw.repository.ClientAddressRepository;
 import com.tsw.repository.ClientRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,11 +35,11 @@ public class AddressService {
         return clientAddressRepository.findByIdClientId(clientId);
     }
 
+    @Transactional
     public ClientAddress add(UUID clientId, AddressRequest req) {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new IllegalArgumentException("Client not found"));
 
-        // if this is marked as default, unset the current default first
         if (req.isDefault()) {
             clearDefault(clientId);
         }
@@ -60,6 +61,7 @@ public class AddressService {
         return clientAddressRepository.save(link);
     }
 
+    @Transactional
     public boolean remove(UUID clientId, UUID addressId) {
         ClientAddressId linkId = new ClientAddressId();
         linkId.setClientId(clientId);
@@ -72,6 +74,7 @@ public class AddressService {
         }).orElse(false);
     }
 
+    @Transactional
     public Optional<ClientAddress> update(UUID clientId, UUID addressId, AddressRequest req) {
         ClientAddressId linkId = new ClientAddressId();
         linkId.setClientId(clientId);
@@ -89,14 +92,14 @@ public class AddressService {
         });
     }
 
+    @Transactional
     public boolean setDefault(UUID clientId, UUID addressId) {
-        clearDefault(clientId);
-
         ClientAddressId linkId = new ClientAddressId();
         linkId.setClientId(clientId);
         linkId.setAddressId(addressId);
 
         return clientAddressRepository.findById(linkId).map(link -> {
+            clearDefault(clientId);
             link.setIsDefault(true);
             clientAddressRepository.save(link);
             return true;
