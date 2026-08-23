@@ -1,5 +1,8 @@
 package com.tsw.service;
 
+import com.tsw.exception.StorageOperationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -14,6 +17,8 @@ import java.util.Map;
 
 @Service
 public class SupabaseStorageService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SupabaseStorageService.class);
 
     private final String supabaseUrl;
     private final String serviceKey;
@@ -30,10 +35,7 @@ public class SupabaseStorageService {
         this.bucket = bucket;
     }
 
-    /**
-     * Uploads to Supabase 
-     */
-    public String upload(MultipartFile file, String objectPath) throws IOException {
+    public String upload(MultipartFile file, String objectPath) {
         String contentType = file.getContentType() != null
                 ? file.getContentType()
                 : "application/octet-stream";
@@ -45,17 +47,13 @@ public class SupabaseStorageService {
                     .body(file.getBytes())
                     .retrieve()
                     .toBodilessEntity();
-        } catch (RestClientException e) {
-            throw new IOException("Supabase upload failed for " + objectPath + ": " + e.getMessage(), e);
+        } catch (RestClientException | IOException exception) {
+            throw new StorageOperationException(exception);
         }
 
         return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + objectPath;
     }
 
-    /**
-     * Deletes from Supabase 
-     * ignores failures so that a missing file never breaks a delete request
-     */
     public void delete(String publicUrl) {
         if (publicUrl == null) return;
 
@@ -72,8 +70,8 @@ public class SupabaseStorageService {
                     .body(Map.of("prefixes", List.of(objectPath)))
                     .retrieve()
                     .toBodilessEntity();
-        } catch (RestClientException e) {
-            System.err.println("Could not delete from Supabase: " + objectPath + " - " + e.getMessage());
+        } catch (RestClientException exception) {
+            LOGGER.warn("Could not delete Supabase object {}", objectPath, exception);
         }
     }
 }

@@ -1,6 +1,10 @@
 package com.tsw.service;
 
-import com.tsw.dto.ClientRequest;
+import com.tsw.dto.RegisterRequest;
+import com.tsw.dto.UpdateClientRequest;
+import com.tsw.exception.ApiErrorCode;
+import com.tsw.exception.EmailAlreadyUsedException;
+import com.tsw.exception.ResourceNotFoundException;
 import com.tsw.model.Client;
 import com.tsw.repository.ClientRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,57 +29,58 @@ public class ClientService {
         return clientRepository.findAll();
     }
 
-    public Optional<Client> findById(UUID id) {
-        return clientRepository.findById(id);
+    public Client getById(UUID id) {
+        return clientRepository.findById(id)
+                .orElseThrow(this::clientNotFound);
     }
 
     public Optional<Client> findByEmail(String email) {
         return clientRepository.findByEmail(email);
     }
 
-    public boolean emailExists(String email) {
+    private boolean emailExists(String email) {
         return clientRepository.findByEmail(email).isPresent();
     }
 
-    public Client register(ClientRequest req) {
-        if (emailExists(req.getEmail())) {
-            throw new IllegalArgumentException("Email jest już zajęty");
+    public Client register(RegisterRequest request) {
+        if (emailExists(request.email())) {
+            throw new EmailAlreadyUsedException();
         }
         Client client = new Client();
-        client.setEmail(req.getEmail());
-        client.setPassword(passwordEncoder.encode(req.getPassword()));
-        client.setFirstName(req.getFirstName());
-        client.setLastName(req.getLastName());
-        client.setPhoneNumber(req.getPhoneNumber());
+        client.setEmail(request.email());
+        client.setPassword(passwordEncoder.encode(request.password()));
+        client.setFirstName(request.firstName());
+        client.setLastName(request.lastName());
+        client.setPhoneNumber(request.phoneNumber());
         client.setRole("CLIENT");
         return clientRepository.save(client);
     }
 
-    public Optional<Client> update(UUID id, ClientRequest req) {
-        return clientRepository.findById(id).map(client -> {
-            if (req.getEmail() != null && !req.getEmail().equals(client.getEmail())) {
-                if (emailExists(req.getEmail())) {
-                    throw new IllegalArgumentException("Email jest już zajęty");
-                }
-                client.setEmail(req.getEmail());
+    public Client update(UUID id, UpdateClientRequest request) {
+        Client client = getById(id);
+        if (request.email() != null && !request.email().equals(client.getEmail())) {
+            if (emailExists(request.email())) {
+                throw new EmailAlreadyUsedException();
             }
-            if (req.getFirstName() != null) {
-                if (req.getFirstName().isBlank()) throw new IllegalArgumentException("Imię nie może być puste");
-                client.setFirstName(req.getFirstName());
-            }
-            if (req.getLastName() != null) {
-                if (req.getLastName().isBlank()) throw new IllegalArgumentException("Nazwisko nie może być puste");
-                client.setLastName(req.getLastName());
-            }
-            if (req.getPhoneNumber() != null) client.setPhoneNumber(req.getPhoneNumber());
-            return clientRepository.save(client);
-        });
+            client.setEmail(request.email());
+        }
+        if (request.firstName() != null) {
+            client.setFirstName(request.firstName());
+        }
+        if (request.lastName() != null) {
+            client.setLastName(request.lastName());
+        }
+        if (request.phoneNumber() != null) {
+            client.setPhoneNumber(request.phoneNumber());
+        }
+        return clientRepository.save(client);
     }
 
-    public boolean delete(UUID id) {
-        return clientRepository.findById(id).map(client -> {
-            clientRepository.delete(client);
-            return true;
-        }).orElse(false);
+    public void delete(UUID id) {
+        clientRepository.delete(getById(id));
+    }
+
+    private ResourceNotFoundException clientNotFound() {
+        return new ResourceNotFoundException(ApiErrorCode.CLIENT_NOT_FOUND, "Nie znaleziono klienta");
     }
 }

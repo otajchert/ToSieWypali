@@ -2,14 +2,17 @@ package com.tsw.controller;
 
 import com.tsw.config.JwtUtil;
 import com.tsw.dto.AuthResponse;
-import com.tsw.dto.ClientRequest;
 import com.tsw.dto.LoginRequest;
+import com.tsw.dto.RegisterRequest;
+import com.tsw.exception.InvalidCredentialsException;
 import com.tsw.model.Client;
 import com.tsw.service.ClientService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -26,24 +29,18 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
-        return clientService.findByEmail(req.getEmail())
-                .filter(c -> passwordEncoder.matches(req.getPassword(), c.getPassword()))
-                .map(c -> {
-                    String token = jwtUtil.generate(c.getId());
-                    return ResponseEntity.ok((Object) new AuthResponse(token, c.getId(), c.getEmail(), c.getRole()));
-                })
-                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Nieprawidłowy email lub hasło"));
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        Client client = clientService.findByEmail(request.email())
+                .filter(found -> passwordEncoder.matches(request.password(), found.getPassword()))
+                .orElseThrow(InvalidCredentialsException::new);
+        String token = jwtUtil.generate(client.getId());
+        return new AuthResponse(token, client.getId(), client.getEmail(), client.getRole());
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody ClientRequest req) {
-        try {
-            Client c = clientService.register(req);
-            String token = jwtUtil.generate(c.getId());
-            return ResponseEntity.ok(new AuthResponse(token, c.getId(), c.getEmail(), c.getRole()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
+        Client client = clientService.register(request);
+        String token = jwtUtil.generate(client.getId());
+        return new AuthResponse(token, client.getId(), client.getEmail(), client.getRole());
     }
 }

@@ -1,42 +1,31 @@
 package com.tsw.dto;
 
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-// shape of JSON the frontend sends when creating or updating a product
-public class ProductRequest {
-
-    private String name;
-    private String description;
-    private BigDecimal price;
-    private int qtyInStock;
-    private String sku;
-    private String weight;
-    private String height;
-    private String width;
-    private String productLength;
-    private List<UUID> categoryIds = new ArrayList<>();
-
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
-    public BigDecimal getPrice() { return price; }
-    public void setPrice(BigDecimal price) { this.price = price; }
-    public int getQtyInStock() { return qtyInStock; }
-    public void setQtyInStock(int qtyInStock) { this.qtyInStock = qtyInStock; }
-    public String getSku() { return sku; }
-    public void setSku(String sku) { this.sku = sku; }
-    public String getWeight() { return weight; }
-    public void setWeight(String weight) { this.weight = weight; }
-    public String getHeight() { return height; }
-    public void setHeight(String height) { this.height = height; }
-    public String getWidth() { return width; }
-    public void setWidth(String width) { this.width = width; }
-    public String getProductLength() { return productLength; }
-    public void setProductLength(String productLength) { this.productLength = productLength; }
-    public List<UUID> getCategoryIds() { return categoryIds; }
-    public void setCategoryIds(List<UUID> categoryIds) { this.categoryIds = categoryIds; }
+public record ProductRequest(
+        @NotBlank(message = "PRODUCT_NAME_REQUIRED")
+        @Size(max = 255, message = "PRODUCT_NAME_TOO_LONG") String name,
+        @Size(max = 10_000, message = "PRODUCT_DESCRIPTION_TOO_LONG") String description,
+        @NotNull(message = "PRICE_REQUIRED")
+        @Positive(message = "PRICE_MUST_BE_POSITIVE")
+        @Digits(integer = 8, fraction = 2, message = "INVALID_PRICE_FORMAT") BigDecimal price,
+        @NotNull(message = "STOCK_QUANTITY_REQUIRED")
+        @PositiveOrZero(message = "STOCK_QUANTITY_MUST_NOT_BE_NEGATIVE") Integer qtyInStock,
+        @Size(max = 50, message = "WEIGHT_TOO_LONG") String weight,
+        @Size(max = 50, message = "HEIGHT_TOO_LONG") String height,
+        @Size(max = 50, message = "WIDTH_TOO_LONG") String width,
+        @Size(max = 50, message = "PRODUCT_LENGTH_TOO_LONG") String productLength,
+        @NotNull(message = "CATEGORY_IDS_REQUIRED")
+        @Size(max = 100, message = "TOO_MANY_CATEGORIES")
+        List<@NotNull(message = "CATEGORY_ID_REQUIRED") UUID> categoryIds
+) {
 }

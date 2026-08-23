@@ -1,8 +1,8 @@
 package com.tsw.exception;
 
-public class InsufficientStockException extends RuntimeException {
+public class InsufficientStockException extends ApiException {
 
     public InsufficientStockException(String message) {
-        super(message);
+        super(ApiErrorCode.INSUFFICIENT_STOCK, message);
     }
 }

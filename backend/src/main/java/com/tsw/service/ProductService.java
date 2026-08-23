@@ -1,6 +1,9 @@
 package com.tsw.service;
 
 import com.tsw.dto.ProductRequest;
+import com.tsw.exception.ApiErrorCode;
+import com.tsw.exception.ProductInUseException;
+import com.tsw.exception.ResourceNotFoundException;
 import com.tsw.model.Category;
 import com.tsw.model.Product;
 import com.tsw.model.ProductImage;
@@ -13,13 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -49,8 +49,9 @@ public class ProductService {
         return productRepository.findAll();
     }
 
-    public Optional<Product> findById(UUID id) {
-        return productRepository.findById(id);
+    public Product getById(UUID id) {
+        return productRepository.findById(id)
+                .orElseThrow(this::productNotFound);
     }
 
     public Product create(ProductRequest req) {
@@ -60,34 +61,30 @@ public class ProductService {
         return productRepository.save(product);
     }
 
-    public Optional<Product> update(UUID id, ProductRequest req) {
-        return productRepository.findById(id).map(product -> {
-            applyRequest(product, req);
-            return productRepository.save(product);
-        });
+    public Product update(UUID id, ProductRequest req) {
+        Product product = getById(id);
+        applyRequest(product, req);
+        return productRepository.save(product);
     }
 
     @Transactional
-    public boolean delete(UUID id) {
-        return productRepository.findById(id).map(product -> {
-            if (orderProductRepository.existsByIdProductId(id)) {
-                throw new IllegalStateException("Produkt jest częścią istniejących zamówień i nie może zostać usunięty.");
-            }
-            cartItemRepository.deleteByProductId(id);
-            for (ProductImage img : product.getImages()) {
-                storageService.delete(img.getImageUrl());
-            }
-            if (product.getPhoto() != null) {
-                storageService.delete(product.getPhoto());
-            }
-            productRepository.delete(product);
-            return true;
-        }).orElse(false);
+    public void delete(UUID id) {
+        Product product = getById(id);
+        if (orderProductRepository.existsByIdProductId(id)) {
+            throw new ProductInUseException();
+        }
+        cartItemRepository.deleteByProductId(id);
+        for (ProductImage image : product.getImages()) {
+            storageService.delete(image.getImageUrl());
+        }
+        if (product.getPhoto() != null) {
+            storageService.delete(product.getPhoto());
+        }
+        productRepository.delete(product);
     }
 
-    public ProductImage addGalleryImage(UUID productId, MultipartFile file) throws IOException {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+    public ProductImage addGalleryImage(UUID productId, MultipartFile file) {
+        Product product = getById(productId);
 
         String publicUrl = saveFile(file, "products");
 
@@ -104,53 +101,41 @@ public class ProductService {
         return productImageRepository.save(image);
     }
 
-    public boolean removeGalleryImage(UUID productId, UUID imageId) {
-        return productImageRepository.findById(imageId).map(image -> {
-            if (!image.getProduct().getId().equals(productId)) {
-                return false;
-            }
-            storageService.delete(image.getImageUrl());
-            productImageRepository.delete(image);
-            return true;
-        }).orElse(false);
+    public void removeGalleryImage(UUID productId, UUID imageId) {
+        getById(productId);
+        ProductImage image = getProductImage(productId, imageId);
+        storageService.delete(image.getImageUrl());
+        productImageRepository.delete(image);
     }
 
-    public Optional<Product> linkPhotoUrl(UUID productId, String url) {
-        return productRepository.findById(productId).map(product -> {
-            product.setPhoto(url);
-            return productRepository.save(product);
-        });
+    public Product linkPhotoUrl(UUID productId, String url) {
+        Product product = getById(productId);
+        product.setPhoto(url);
+        return productRepository.save(product);
     }
 
-    public Optional<ProductImage> linkGalleryUrl(UUID productId, String url) {
-        return productRepository.findById(productId).map(product -> {
-            int nextOrder = product.getImages().stream()
-                    .mapToInt(ProductImage::getSortOrder)
-                    .max()
-                    .orElse(-1) + 1;
-            ProductImage image = new ProductImage();
-            image.setImageUrl(url);
-            image.setSortOrder(nextOrder);
-            image.setProduct(product);
-            return productImageRepository.save(image);
-        });
+    public ProductImage linkGalleryUrl(UUID productId, String url) {
+        Product product = getById(productId);
+        int nextOrder = product.getImages().stream()
+                .mapToInt(ProductImage::getSortOrder)
+                .max()
+                .orElse(-1) + 1;
+        ProductImage image = new ProductImage();
+        image.setImageUrl(url);
+        image.setSortOrder(nextOrder);
+        image.setProduct(product);
+        return productImageRepository.save(image);
     }
 
-    public Optional<Product> setImageAsMain(UUID productId, UUID imageId) {
-        return productRepository.findById(productId).map(product -> {
-            productImageRepository.findById(imageId).ifPresent(image -> {
-                if (image.getProduct().getId().equals(productId)) {
-                    product.setPhoto(image.getImageUrl());
-                    productRepository.save(product);
-                }
-            });
-            return product;
-        });
+    public Product setImageAsMain(UUID productId, UUID imageId) {
+        Product product = getById(productId);
+        ProductImage image = getProductImage(productId, imageId);
+        product.setPhoto(image.getImageUrl());
+        return productRepository.save(product);
     }
 
-    public Product setMainPhoto(UUID productId, MultipartFile file) throws IOException {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+    public Product setMainPhoto(UUID productId, MultipartFile file) {
+        Product product = getById(productId);
 
         if (product.getPhoto() != null) {
             storageService.delete(product.getPhoto());
@@ -162,29 +147,46 @@ public class ProductService {
     }
 
     private void applyRequest(Product product, ProductRequest req) {
-        product.setName(req.getName());
-        product.setDescription(req.getDescription());
-        product.setPrice(req.getPrice());
-        product.setQtyInStock(req.getQtyInStock());
-        product.setWeight(req.getWeight());
-        product.setHeight(req.getHeight());
-        product.setWidth(req.getWidth());
-        product.setProductLength(req.getProductLength());
+        product.setName(req.name());
+        product.setDescription(req.description());
+        product.setPrice(req.price());
+        product.setQtyInStock(req.qtyInStock());
+        product.setWeight(req.weight());
+        product.setHeight(req.height());
+        product.setWidth(req.width());
+        product.setProductLength(req.productLength());
 
-        Set<Category> categories = req.getCategoryIds().stream()
-                .map(categoryId -> categoryRepository.findById(categoryId).orElse(null))
-                .filter(c -> c != null)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<Category> categories = new LinkedHashSet<>();
+        for (UUID categoryId : req.categoryIds()) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            ApiErrorCode.CATEGORY_NOT_FOUND,
+                            "Nie znaleziono kategorii"
+                    ));
+            categories.add(category);
+        }
         product.setCategories(categories);
     }
 
-    // uploads file to Supabase and returns the public URL stored in the database
-    private String saveFile(MultipartFile file, String subdir) throws IOException {
+    private String saveFile(MultipartFile file, String subdir) {
         String originalName = file.getOriginalFilename();
         String ext = (originalName != null && originalName.contains("."))
                 ? originalName.substring(originalName.lastIndexOf('.'))
                 : "";
         String objectPath = subdir + "/" + UUID.randomUUID() + ext;
         return storageService.upload(file, objectPath);
+    }
+
+    private ProductImage getProductImage(UUID productId, UUID imageId) {
+        return productImageRepository.findById(imageId)
+                .filter(image -> image.getProduct().getId().equals(productId))
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ApiErrorCode.PRODUCT_IMAGE_NOT_FOUND,
+                        "Nie znaleziono zdjęcia produktu"
+                ));
+    }
+
+    private ResourceNotFoundException productNotFound() {
+        return new ResourceNotFoundException(ApiErrorCode.PRODUCT_NOT_FOUND, "Nie znaleziono produktu");
     }
 }

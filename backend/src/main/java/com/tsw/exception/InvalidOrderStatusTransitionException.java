@@ -1,8 +1,8 @@
 package com.tsw.exception;
 
-public class InvalidOrderStatusTransitionException extends RuntimeException {
+public class InvalidOrderStatusTransitionException extends ApiException {
 
     public InvalidOrderStatusTransitionException(String message) {
-        super(message);
+        super(ApiErrorCode.INVALID_ORDER_STATUS_TRANSITION, message);
     }
 }

@@ -6,8 +6,8 @@ import jakarta.validation.constraints.Positive;
 import java.util.UUID;
 
 public record AddCartItemRequest(
-        @NotNull(message = "Identyfikator produktu jest wymagany") UUID productId,
-        @NotNull(message = "Ilość jest wymagana")
-        @Positive(message = "Ilość musi być większa od zera") Integer qty
+        @NotNull(message = "PRODUCT_ID_REQUIRED") UUID productId,
+        @NotNull(message = "QUANTITY_REQUIRED")
+        @Positive(message = "QUANTITY_MUST_BE_POSITIVE") Integer qty
 ) {
 }

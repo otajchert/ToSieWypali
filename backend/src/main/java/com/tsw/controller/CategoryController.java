@@ -3,11 +3,19 @@ package com.tsw.controller;
 import com.tsw.dto.CategoryRequest;
 import com.tsw.model.Category;
 import com.tsw.service.CategoryService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -26,40 +34,23 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Category> getById(@PathVariable UUID id) {
-        return categoryService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Category getById(@PathVariable UUID id) {
+        return categoryService.getById(id);
     }
 
     @PostMapping
-    public ResponseEntity<Category> create(@RequestBody CategoryRequest req) {
-        return ResponseEntity.ok(categoryService.create(req));
+    public Category create(@Valid @RequestBody CategoryRequest request) {
+        return categoryService.create(request);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Category> update(@PathVariable UUID id, @RequestBody CategoryRequest req) {
-        return categoryService.update(id, req)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Category update(@PathVariable UUID id, @Valid @RequestBody CategoryRequest request) {
+        return categoryService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(
-            @PathVariable UUID id,
-            @RequestParam(defaultValue = "false") boolean force) {
-
-        if (!categoryService.findById(id).isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        if (!force) {
-            long count = categoryService.countProducts(id);
-            if (count > 0) {
-                return ResponseEntity.status(409).body(Map.of("productCount", count));
-            }
-        }
-
+    public ResponseEntity<Void> delete(@PathVariable UUID id,
+                                       @RequestParam(defaultValue = "false") boolean force) {
         categoryService.delete(id, force);
         return ResponseEntity.noContent().build();
     }

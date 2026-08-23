@@ -5,8 +5,12 @@ import com.tsw.dto.UpdateOrderStatusRequest;
 import com.tsw.model.ShopOrder;
 import com.tsw.service.OrderService;
 import jakarta.validation.Valid;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,10 +31,8 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShopOrder> getById(@PathVariable UUID id) {
-        return orderService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ShopOrder getById(@PathVariable UUID id) {
+        return orderService.getById(id);
     }
 
     @GetMapping("/{id}/items")
@@ -39,10 +41,8 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<ShopOrder> updateStatus(@PathVariable UUID id,
-                                                   @Valid @RequestBody UpdateOrderStatusRequest request) {
-        return orderService.updateStatus(id, request.statusId())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ShopOrder updateStatus(@PathVariable UUID id,
+                                  @Valid @RequestBody UpdateOrderStatusRequest request) {
+        return orderService.updateStatus(id, request.statusId());
     }
 }

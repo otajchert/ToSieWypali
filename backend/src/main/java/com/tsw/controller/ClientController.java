@@ -1,10 +1,17 @@
 package com.tsw.controller;
 
-import com.tsw.dto.ClientRequest;
+import com.tsw.dto.UpdateClientRequest;
 import com.tsw.model.Client;
 import com.tsw.service.ClientService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,27 +32,18 @@ public class ClientController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Client> getById(@PathVariable UUID id) {
-        return clientService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Client getById(@PathVariable UUID id) {
+        return clientService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable UUID id, @RequestBody ClientRequest req) {
-        try {
-            return clientService.update(id, req)
-                    .map(c -> (ResponseEntity<?>) ResponseEntity.ok(c))
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public Client update(@PathVariable UUID id, @Valid @RequestBody UpdateClientRequest request) {
+        return clientService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        return clientService.delete(id)
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        clientService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

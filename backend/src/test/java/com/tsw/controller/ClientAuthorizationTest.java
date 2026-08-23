@@ -2,7 +2,7 @@ package com.tsw.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tsw.config.JwtUtil;
-import com.tsw.dto.ClientRequest;
+import com.tsw.dto.UpdateClientRequest;
 import com.tsw.model.Client;
 import com.tsw.repository.ClientRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -63,9 +63,12 @@ class ClientAuthorizationTest {
                 .andExpect(jsonPath("$.email").value(authenticatedClient.getEmail()))
                 .andExpect(jsonPath("$.role").value("CLIENT"));
 
-        ClientRequest update = new ClientRequest();
-        update.setEmail("changed-" + UUID.randomUUID() + "@example.com");
-        update.setFirstName("Changed");
+        UpdateClientRequest update = new UpdateClientRequest(
+                "changed-" + UUID.randomUUID() + "@example.com",
+                "Changed",
+                null,
+                null
+        );
 
         mockMvc.perform(put("/api/clients/{clientId}", otherClient.getId())
                         .header(HttpHeaders.AUTHORIZATION, bearer(authenticatedClient))

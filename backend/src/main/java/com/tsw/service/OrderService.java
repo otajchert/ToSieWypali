@@ -2,12 +2,29 @@ package com.tsw.service;
 
 import com.tsw.dto.OrderItemDto;
 import com.tsw.dto.OrderRequest;
+import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.InsufficientStockException;
 import com.tsw.exception.InvalidOrderStatusTransitionException;
 import com.tsw.exception.InvalidQuantityException;
+import com.tsw.exception.OrderConfigurationException;
 import com.tsw.exception.ResourceNotFoundException;
-import com.tsw.model.*;
-import com.tsw.repository.*;
+import com.tsw.model.Address;
+import com.tsw.model.Client;
+import com.tsw.model.ClientAddress;
+import com.tsw.model.ClientAddressId;
+import com.tsw.model.OrderProduct;
+import com.tsw.model.OrderProductId;
+import com.tsw.model.OrderStatus;
+import com.tsw.model.Product;
+import com.tsw.model.ShippingMethod;
+import com.tsw.model.ShopOrder;
+import com.tsw.repository.ClientAddressRepository;
+import com.tsw.repository.ClientRepository;
+import com.tsw.repository.OrderProductRepository;
+import com.tsw.repository.OrderStatusRepository;
+import com.tsw.repository.ProductRepository;
+import com.tsw.repository.ShippingMethodRepository;
+import com.tsw.repository.ShopOrderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,13 +84,15 @@ public class OrderService {
         return orderRepository.findByClientId(clientId);
     }
 
-    public Optional<ShopOrder> findById(UUID id) {
-        return orderRepository.findById(id);
+    public ShopOrder getById(UUID id) {
+        return orderRepository.findById(id)
+                .orElseThrow(this::orderNotFound);
     }
 
     @Transactional(readOnly = true)
-    public Optional<ShopOrder> findByIdForClient(UUID orderId, UUID clientId) {
-        return orderRepository.findByIdAndClientId(orderId, clientId);
+    public ShopOrder getByIdForClient(UUID orderId, UUID clientId) {
+        return orderRepository.findByIdAndClientId(orderId, clientId)
+                .orElseThrow(this::orderNotFound);
     }
 
     @Transactional(readOnly = true)
@@ -87,8 +106,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<OrderItemDto> getOrderItemsForClient(UUID orderId, UUID clientId) {
-        findByIdForClient(orderId, clientId)
-                .orElseThrow(this::orderNotFound);
+        getByIdForClient(orderId, clientId);
         return findOrderItems(orderId);
     }
 
@@ -106,28 +124,37 @@ public class OrderService {
     @Transactional
     public ShopOrder create(UUID clientId, OrderRequest req) {
         Client client = clientRepository.findById(clientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono klienta"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ApiErrorCode.CLIENT_NOT_FOUND,
+                        "Nie znaleziono klienta"
+                ));
 
-        Address address = req.getAddressId() != null
-                ? clientAddressRepository.findById(new ClientAddressId(clientId, req.getAddressId()))
+        Address address = req.addressId() != null
+                ? clientAddressRepository.findById(new ClientAddressId(clientId, req.addressId()))
                         .map(ClientAddress::getAddress)
-                        .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono adresu"))
+                        .orElseThrow(() -> new ResourceNotFoundException(
+                                ApiErrorCode.ADDRESS_NOT_FOUND,
+                                "Nie znaleziono adresu"
+                        ))
                 : null;
 
-        ShippingMethod shippingMethod = shippingMethodRepository.findById(req.getShippingMethodId())
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono metody dostawy"));
+        ShippingMethod shippingMethod = shippingMethodRepository.findById(req.shippingMethodId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ApiErrorCode.SHIPPING_METHOD_NOT_FOUND,
+                        "Nie znaleziono metody dostawy"
+                ));
 
         BigDecimal total = shippingMethod.getPrice();
-        for (var item : req.getItems()) {
-            if (item.getQty() <= 0) {
+        for (var item : req.items()) {
+            if (item.qty() == null || item.qty() <= 0) {
                 throw new InvalidQuantityException("Ilość musi być większa od zera");
             }
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono produktu"));
-            if (product.getQtyInStock() < item.getQty()) {
+            Product product = productRepository.findById(item.productId())
+                    .orElseThrow(() -> productNotFound());
+            if (product.getQtyInStock() < item.qty()) {
                 throw new InsufficientStockException("Niewystarczająca ilość produktu: " + product.getName());
             }
-            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(item.getQty())));
+            total = total.add(product.getPrice().multiply(BigDecimal.valueOf(item.qty())));
         }
 
         ShopOrder order = new ShopOrder();
@@ -136,13 +163,13 @@ public class OrderService {
         order.setShippingMethod(shippingMethod);
         order.setOrderTotal(total);
         OrderStatus initialStatus = orderStatusRepository.findById(PLACED_STATUS_ID)
-                .orElseThrow(() -> new IllegalStateException("Brak początkowego statusu zamówienia"));
+                .orElseThrow(OrderConfigurationException::new);
         order.setOrderStatus(initialStatus);
         order = orderRepository.save(order);
 
-        for (var itemReq : req.getItems()) {
-            Product product = productRepository.findById(itemReq.getProductId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono produktu"));
+        for (var itemRequest : req.items()) {
+            Product product = productRepository.findById(itemRequest.productId())
+                    .orElseThrow(() -> productNotFound());
 
             OrderProductId opId = new OrderProductId();
             opId.setOrderId(order.getId());
@@ -152,11 +179,11 @@ public class OrderService {
             op.setId(opId);
             op.setOrder(order);
             op.setProduct(product);
-            op.setQty(itemReq.getQty());
+            op.setQty(itemRequest.qty());
             op.setPrice(product.getPrice());
             orderProductRepository.save(op);
 
-            product.setQtyInStock(product.getQtyInStock() - itemReq.getQty());
+            product.setQtyInStock(product.getQtyInStock() - itemRequest.qty());
             productRepository.save(product);
         }
 
@@ -164,30 +191,36 @@ public class OrderService {
     }
 
     @Transactional
-    public Optional<ShopOrder> updateStatus(UUID orderId, UUID statusId) {
+    public ShopOrder updateStatus(UUID orderId, UUID statusId) {
         OrderStatus status = orderStatusRepository.findById(statusId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono statusu zamówienia"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ApiErrorCode.ORDER_STATUS_NOT_FOUND,
+                        "Nie znaleziono statusu zamówienia"
+                ));
+        ShopOrder order = orderRepository.findByIdForUpdate(orderId)
+                .orElseThrow(this::orderNotFound);
+        UUID currentStatusId = Optional.ofNullable(order.getOrderStatus())
+                .map(OrderStatus::getId)
+                .orElse(null);
+        if (statusId.equals(currentStatusId)) {
+            return order;
+        }
+        Set<UUID> allowedStatuses = currentStatusId == null
+                ? Set.of(PLACED_STATUS_ID)
+                : ALLOWED_STATUS_TRANSITIONS.getOrDefault(currentStatusId, Set.of());
+        if (!allowedStatuses.contains(statusId)) {
+            throw new InvalidOrderStatusTransitionException("Ta zmiana statusu zamówienia nie jest dozwolona");
+        }
 
-        return orderRepository.findByIdForUpdate(orderId).map(order -> {
-            UUID currentStatusId = Optional.ofNullable(order.getOrderStatus())
-                    .map(OrderStatus::getId)
-                    .orElse(null);
-            if (statusId.equals(currentStatusId)) {
-                return order;
-            }
-            Set<UUID> allowedStatuses = currentStatusId == null
-                    ? Set.of(PLACED_STATUS_ID)
-                    : ALLOWED_STATUS_TRANSITIONS.getOrDefault(currentStatusId, Set.of());
-            if (!allowedStatuses.contains(statusId)) {
-                throw new InvalidOrderStatusTransitionException("Ta zmiana statusu zamówienia nie jest dozwolona");
-            }
-
-            order.setOrderStatus(status);
-            return orderRepository.save(order);
-        });
+        order.setOrderStatus(status);
+        return orderRepository.save(order);
     }
 
     private ResourceNotFoundException orderNotFound() {
-        return new ResourceNotFoundException("Nie znaleziono zamówienia");
+        return new ResourceNotFoundException(ApiErrorCode.ORDER_NOT_FOUND, "Nie znaleziono zamówienia");
+    }
+
+    private ResourceNotFoundException productNotFound() {
+        return new ResourceNotFoundException(ApiErrorCode.PRODUCT_NOT_FOUND, "Nie znaleziono produktu");
     }
 }

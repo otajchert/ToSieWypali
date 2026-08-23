@@ -34,11 +34,9 @@ public class CurrentClientOrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<ShopOrder> getById(@AuthenticationPrincipal AuthenticatedClient client,
-                                             @PathVariable UUID orderId) {
-        return orderService.findByIdForClient(orderId, client.id())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ShopOrder getById(@AuthenticationPrincipal AuthenticatedClient client,
+                             @PathVariable UUID orderId) {
+        return orderService.getByIdForClient(orderId, client.id());
     }
 
     @GetMapping("/{orderId}/items")

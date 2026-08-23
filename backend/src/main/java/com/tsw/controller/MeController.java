@@ -1,9 +1,10 @@
 package com.tsw.controller;
 
 import com.tsw.config.AuthenticatedClient;
-import com.tsw.dto.ClientRequest;
+import com.tsw.dto.UpdateClientRequest;
 import com.tsw.model.Client;
 import com.tsw.service.ClientService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,28 +25,19 @@ public class MeController {
     }
 
     @GetMapping
-    public ResponseEntity<Client> get(@AuthenticationPrincipal AuthenticatedClient client) {
-        return clientService.findById(client.id())
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public Client get(@AuthenticationPrincipal AuthenticatedClient client) {
+        return clientService.getById(client.id());
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@AuthenticationPrincipal AuthenticatedClient client,
-                                    @RequestBody ClientRequest req) {
-        try {
-            return clientService.update(client.id(), req)
-                    .map(updated -> (ResponseEntity<?>) ResponseEntity.ok(updated))
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public Client update(@AuthenticationPrincipal AuthenticatedClient client,
+                         @Valid @RequestBody UpdateClientRequest request) {
+        return clientService.update(client.id(), request);
     }
 
     @DeleteMapping
     public ResponseEntity<Void> delete(@AuthenticationPrincipal AuthenticatedClient client) {
-        return clientService.delete(client.id())
-                ? ResponseEntity.noContent().build()
-                : ResponseEntity.notFound().build();
+        clientService.delete(client.id());
+        return ResponseEntity.noContent().build();
     }
 }

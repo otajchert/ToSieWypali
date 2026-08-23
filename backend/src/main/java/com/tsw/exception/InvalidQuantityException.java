@@ -1,8 +1,8 @@
 package com.tsw.exception;
 
-public class InvalidQuantityException extends RuntimeException {
+public class InvalidQuantityException extends ApiException {
 
     public InvalidQuantityException(String message) {
-        super(message);
+        super(ApiErrorCode.INVALID_QUANTITY, message);
     }
 }

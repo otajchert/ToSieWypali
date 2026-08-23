@@ -1,5 +1,6 @@
 package com.tsw.service;
 
+import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.InsufficientStockException;
 import com.tsw.exception.InvalidQuantityException;
 import com.tsw.exception.ResourceNotFoundException;
@@ -48,7 +49,10 @@ public class ShoppingCartService {
         validateQuantity(qty);
         Client client = findClientForUpdate(clientId);
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono produktu"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ApiErrorCode.PRODUCT_NOT_FOUND,
+                        "Nie znaleziono produktu"
+                ));
         ShoppingCart cart = getOrCreateCart(client);
 
         Optional<CartItem> existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), productId);
@@ -121,7 +125,10 @@ public class ShoppingCartService {
 
     private Client findClientForUpdate(UUID clientId) {
         return clientRepository.findByIdForUpdate(clientId)
-                .orElseThrow(() -> new ResourceNotFoundException("Nie znaleziono klienta"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        ApiErrorCode.CLIENT_NOT_FOUND,
+                        "Nie znaleziono klienta"
+                ));
     }
 
     private void validateQuantity(int qty) {
@@ -131,6 +138,6 @@ public class ShoppingCartService {
     }
 
     private ResourceNotFoundException cartItemNotFound() {
-        return new ResourceNotFoundException("Nie znaleziono pozycji koszyka");
+        return new ResourceNotFoundException(ApiErrorCode.CART_ITEM_NOT_FOUND, "Nie znaleziono pozycji koszyka");
     }
 }
