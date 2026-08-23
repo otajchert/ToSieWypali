@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-// composite PK for client_address junction
 @Embeddable
 public class ClientAddressId implements Serializable {
 

@@ -133,7 +133,8 @@ class ShoppingCartControllerTest {
                         .content(json(new UpdateCartItemQuantityRequest(4))))
                 .andExpect(status().isNotFound())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.status").value(404));
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.code").value("CART_ITEM_NOT_FOUND"));
 
         assertEquals(2, cartItemRepository.findById(ownerItem.getId()).orElseThrow().getQty());
         assertTrue(cartRepository.findByClientId(otherClient.getId()).isEmpty());
@@ -150,7 +151,9 @@ class ShoppingCartControllerTest {
                         .content(json(new AddCartItemRequest(product.getId(), 0))))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.status").value(400));
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                .andExpect(jsonPath("$.errors.qty[0]").value("QUANTITY_MUST_BE_POSITIVE"));
 
         mockMvc.perform(post("/api/cart/items")
                         .header(HttpHeaders.AUTHORIZATION, bearer(client))
@@ -158,7 +161,8 @@ class ShoppingCartControllerTest {
                         .content(json(new AddCartItemRequest(product.getId(), 4))))
                 .andExpect(status().isConflict())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
-                .andExpect(jsonPath("$.status").value(409));
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.code").value("INSUFFICIENT_STOCK"));
 
         assertTrue(cartRepository.findByClientId(client.getId()).isEmpty());
     }

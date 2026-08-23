@@ -6,7 +6,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-// composite PK for order_product junction
 @Embeddable
 public class OrderProductId implements Serializable {
 

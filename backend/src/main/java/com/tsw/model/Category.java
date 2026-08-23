@@ -13,7 +13,6 @@ public class Category {
     @Column(name = "UniqueID")
     private UUID id;
 
-    // self-referencing FK for subcategories
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")
     @JsonIgnore

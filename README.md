@@ -1,6 +1,9 @@
 # To Sie Wypali
 
-Small online shop for pottery products.
+Small online shop for pottery products
+
+online at:
+tosiewypali.pl
 
 ## Stack
 
@@ -14,6 +17,8 @@ Java 22, Spring Boot, MySQL, React, Docker
 ## Run
 
 Copy `.env.example` to `.env`, fill in the values and run:
+
+Generate a JWT secret with `openssl rand -base64 32` and add the result as `JWT_SECRET` in `.env`.
 
 ```powershell
 docker compose up --build

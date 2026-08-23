@@ -3,7 +3,7 @@ package com.tsw.model;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
-// junction: product <-> shop_order (with qty and price)
+
 @Entity
 @Table(name = "order_product")
 public class OrderProduct {
