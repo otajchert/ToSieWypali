@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCategories } from '../context/CategoryContext';
 import { getOrderStatusOptions } from '../orderStatuses';
+import { readApiError } from '../apiErrors';
 import './AdminPage.css';
 
 function AdminPage() {
@@ -10,24 +11,36 @@ function AdminPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(null);
+    const [error, setError] = useState('');
 
     const { categories, setCategories } = useCategories();
     const [newCatName, setNewCatName] = useState('');
     const [catSaving, setCatSaving] = useState(false);
-    const [deleteDialog, setDeleteDialog] = useState(null); // { id, name, productCount }
+    const [deleteDialog, setDeleteDialog] = useState(null);
 
     useEffect(() => {
         if (!user || user.role !== 'ADMIN') return;
         fetch('/api/orders', { headers: authHeader() })
-            .then(res => res.ok ? res.json() : [])
+            .then(async res => {
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się pobrać zamówień.');
+                    setError(apiError.message);
+                    return [];
+                }
+                return res.json();
+            })
             .then(data => setOrders(data))
-            .catch(() => setOrders([]))
+            .catch(() => {
+                setOrders([]);
+                setError('Błąd połączenia z serwerem.');
+            })
             .finally(() => setLoading(false));
     }, [user]);
 
     async function changeStatus(orderId, statusId) {
         if (!statusId) return;
         setUpdating(orderId);
+        setError('');
         try {
             const res = await fetch(`/api/orders/${orderId}/status`, {
                 method: 'PUT',
@@ -37,7 +50,12 @@ function AdminPage() {
             if (res.ok) {
                 const updated = await res.json();
                 setOrders(prev => prev.map(o => o.id === orderId ? updated : o));
+            } else {
+                const apiError = await readApiError(res, 'Nie udało się zmienić statusu zamówienia.');
+                setError(apiError.message);
             }
+        } catch {
+            setError('Błąd połączenia z serwerem.');
         } finally {
             setUpdating(null);
         }
@@ -48,6 +66,7 @@ function AdminPage() {
         const name = newCatName.trim();
         if (!name) return;
         setCatSaving(true);
+        setError('');
         try {
             const res = await fetch('/api/categories', {
                 method: 'POST',
@@ -58,35 +77,60 @@ function AdminPage() {
                 const created = await res.json();
                 setCategories(prev => [...prev, created]);
                 setNewCatName('');
+            } else {
+                const apiError = await readApiError(res, 'Nie udało się dodać kategorii.');
+                setError(apiError.message);
             }
+        } catch {
+            setError('Błąd połączenia z serwerem.');
         } finally {
             setCatSaving(false);
         }
     }
 
     async function requestDelete(cat) {
-        const res = await fetch(`/api/categories/${cat.id}`, {
-            method: 'DELETE',
-            headers: authHeader(),
-        });
-        if (res.status === 204) {
-            setCategories(prev => prev.filter(c => c.id !== cat.id));
-        } else if (res.status === 409) {
-            const data = await res.json();
-            setDeleteDialog({ id: cat.id, name: cat.categoryName, productCount: data.productCount });
+        setError('');
+        try {
+            const res = await fetch(`/api/categories/${cat.id}`, {
+                method: 'DELETE',
+                headers: authHeader(),
+            });
+            if (res.status === 204) {
+                setCategories(prev => prev.filter(c => c.id !== cat.id));
+                return;
+            }
+
+            const apiError = await readApiError(res, 'Nie udało się usunąć kategorii.');
+            const productCount = apiError.problem?.productCount;
+            if (res.status === 409 && typeof productCount === 'number') {
+                setDeleteDialog({ id: cat.id, name: cat.categoryName, productCount });
+            } else {
+                setError(apiError.message);
+            }
+        } catch {
+            setError('Błąd połączenia z serwerem.');
         }
     }
 
     async function confirmDelete() {
         if (!deleteDialog) return;
-        const res = await fetch(`/api/categories/${deleteDialog.id}?force=true`, {
-            method: 'DELETE',
-            headers: authHeader(),
-        });
-        if (res.status === 204) {
-            setCategories(prev => prev.filter(c => c.id !== deleteDialog.id));
+        setError('');
+        try {
+            const res = await fetch(`/api/categories/${deleteDialog.id}?force=true`, {
+                method: 'DELETE',
+                headers: authHeader(),
+            });
+            if (res.status === 204) {
+                setCategories(prev => prev.filter(c => c.id !== deleteDialog.id));
+            } else {
+                const apiError = await readApiError(res, 'Nie udało się usunąć kategorii.');
+                setError(apiError.message);
+            }
+        } catch {
+            setError('Błąd połączenia z serwerem.');
+        } finally {
+            setDeleteDialog(null);
         }
-        setDeleteDialog(null);
     }
 
     if (!user || user.role !== 'ADMIN') {
@@ -106,6 +150,8 @@ function AdminPage() {
                     <h1 className="admin-title">Panel administracyjny</h1>
                     <Link to="/admin/nowy-produkt" className="admin-add-btn">+ Dodaj produkt</Link>
                 </div>
+
+                {error && <p className="admin-error">{error}</p>}
 
                 <section className="admin-section">
                     <h2 className="section-title">Zamówienia</h2>

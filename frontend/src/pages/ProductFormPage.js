@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { readApiError } from '../apiErrors';
 import './ProductFormPage.css';
 
 function ProductFormPage() {
@@ -27,6 +28,7 @@ function ProductFormPage() {
     const [loading, setLoading] = useState(isEdit);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState(null);
+    const [savedProductId, setSavedProductId] = useState(null);
 
     useEffect(() => {
         fetch('/api/categories')
@@ -76,11 +78,21 @@ function ProductFormPage() {
     }
 
     async function deleteExistingImage(imageId) {
-        const res = await fetch(`/api/products/${id}/images/${imageId}`, {
-            method: 'DELETE',
-            headers: authHeader(),
-        });
-        if (res.ok) setExistingImages(imgs => imgs.filter(img => img.id !== imageId));
+        setError(null);
+        try {
+            const res = await fetch(`/api/products/${id}/images/${imageId}`, {
+                method: 'DELETE',
+                headers: authHeader(),
+            });
+            if (!res.ok) {
+                const apiError = await readApiError(res, 'Nie udało się usunąć zdjęcia.');
+                setError(apiError.message);
+                return;
+            }
+            setExistingImages(imgs => imgs.filter(img => img.id !== imageId));
+        } catch {
+            setError('Błąd połączenia z serwerem.');
+        }
     }
 
     function setGalleryUrl(index, value) {
@@ -113,45 +125,61 @@ function ProductFormPage() {
         };
 
         try {
-            let productId = id;
+            let productId = id || savedProductId;
 
-            if (isEdit) {
-                const res = await fetch(`/api/products/${id}`, {
+            if (productId) {
+                const res = await fetch(`/api/products/${productId}`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json', ...authHeader() },
                     body: JSON.stringify(body),
                 });
-                if (!res.ok) throw new Error('Błąd zapisu produktu');
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się zapisać produktu.');
+                    throw new Error(apiError.message);
+                }
             } else {
                 const res = await fetch('/api/products', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...authHeader() },
                     body: JSON.stringify(body),
                 });
-                if (!res.ok) throw new Error('Błąd tworzenia produktu');
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się utworzyć produktu.');
+                    throw new Error(apiError.message);
+                }
                 const product = await res.json();
                 productId = product.id;
+                setSavedProductId(product.id);
             }
 
             if (form.mainPhotoUrl.trim()) {
-                await fetch(`/api/products/${productId}/photo-url`, {
+                const res = await fetch(`/api/products/${productId}/photo-url`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...authHeader() },
                     body: JSON.stringify({ url: form.mainPhotoUrl.trim() }),
                 });
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się zapisać głównego zdjęcia.');
+                    throw new Error(apiError.message);
+                }
             }
 
             for (const url of newGalleryUrls.filter(u => u.trim())) {
-                await fetch(`/api/products/${productId}/image-url`, {
+                const res = await fetch(`/api/products/${productId}/image-url`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', ...authHeader() },
                     body: JSON.stringify({ url: url.trim() }),
                 });
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się zapisać zdjęcia galerii.');
+                    throw new Error(apiError.message);
+                }
+                setNewGalleryUrls(urls => urls.filter(savedUrl => savedUrl.trim() !== url.trim()));
             }
 
             navigate(`/sklep/${productId}`);
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Nie udało się zapisać produktu.');
             setSaving(false);
         }
     }

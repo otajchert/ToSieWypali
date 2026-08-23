@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { readApiError } from '../apiErrors';
 import './LoginPage.css';
 
 function LoginPage() {
@@ -41,7 +42,8 @@ function LoginPage() {
                 body: JSON.stringify({ email, password }),
             });
             if (!res.ok) {
-                setError(await res.text());
+                const apiError = await readApiError(res, 'Nie udało się zalogować.');
+                setError(apiError.message);
                 return;
             }
             const data = await res.json();
@@ -79,7 +81,8 @@ function LoginPage() {
                 }),
             });
             if (!res.ok) {
-                setError(await res.text());
+                const apiError = await readApiError(res, 'Nie udało się zarejestrować.');
+                setError(apiError.message);
                 return;
             }
             const data = await res.json();

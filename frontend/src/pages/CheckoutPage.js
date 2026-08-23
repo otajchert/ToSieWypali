@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { readApiError } from '../apiErrors';
 import './CheckoutPage.css';
 
 const PICKUP_SHIPPING_ID = '00000000-0000-0000-0000-000000000033';
@@ -40,8 +41,8 @@ function CheckoutPage() {
             });
 
             if (!res.ok) {
-                const msg = await res.text();
-                throw new Error(msg || 'Nie udało się złożyć zamówienia');
+                const apiError = await readApiError(res, 'Nie udało się złożyć zamówienia.');
+                throw new Error(apiError.message);
             }
 
             const order = await res.json();
@@ -49,7 +50,7 @@ function CheckoutPage() {
             setShowConfirm(false);
             setPlacedOrderId(order.id);
         } catch (e) {
-            setError(e.message);
+            setError(e.message || 'Nie udało się złożyć zamówienia.');
             setLoading(false);
         }
     }

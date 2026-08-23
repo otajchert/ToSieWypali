@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { readApiError } from '../apiErrors';
 import './ProductDetailPage.css';
 
 const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}`);
@@ -24,8 +25,11 @@ function ProductDetailPage() {
 
     useEffect(() => {
         fetch(`/api/products/${id}`)
-            .then(res => {
-                if (!res.ok) throw new Error('Nie znaleziono produktu');
+            .then(async res => {
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie znaleziono produktu.');
+                    throw new Error(apiError.message);
+                }
                 return res.json();
             })
             .then(data => {
@@ -74,11 +78,11 @@ function ProductDetailPage() {
                 setDeleteNotice({ type: 'success', text: 'Produkt został usunięty.' });
                 setTimeout(() => navigate('/sklep'), 1500);
             } else {
-                const msg = await res.text();
-                setDeleteNotice({ type: 'error', text: msg || 'Błąd usuwania produktu' });
+                const apiError = await readApiError(res, 'Nie udało się usunąć produktu.');
+                setDeleteNotice({ type: 'error', text: apiError.message });
             }
         } catch {
-            setError('Błąd usuwania produktu');
+            setDeleteNotice({ type: 'error', text: 'Błąd połączenia z serwerem.' });
         } finally {
             setDeleting(false);
         }

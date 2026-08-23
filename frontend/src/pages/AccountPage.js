@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { readApiError } from '../apiErrors';
 import './AccountPage.css';
 
 const emptyAddressForm = {
@@ -80,7 +81,8 @@ function AccountPage() {
                 body: JSON.stringify(profileForm),
             });
             if (!res.ok) {
-                setProfileError(await res.text());
+                const apiError = await readApiError(res, 'Nie udało się zapisać danych.');
+                setProfileError(apiError.message);
             } else {
                 setProfileMsg('Zapisano.');
                 setEditingProfile(false);
@@ -114,19 +116,39 @@ function AccountPage() {
     }
 
     async function deleteAddress(addressId) {
-        await fetch(`/api/me/addresses/${addressId}`, {
-            method: 'DELETE',
-            headers: authHeader(),
-        });
-        fetchAddresses();
+        setAddrError('');
+        try {
+            const res = await fetch(`/api/me/addresses/${addressId}`, {
+                method: 'DELETE',
+                headers: authHeader(),
+            });
+            if (!res.ok) {
+                const apiError = await readApiError(res, 'Nie udało się usunąć adresu.');
+                setAddrError(apiError.message);
+                return;
+            }
+            fetchAddresses();
+        } catch {
+            setAddrError('Błąd połączenia z serwerem.');
+        }
     }
 
     async function setDefaultAddress(addressId) {
-        await fetch(`/api/me/addresses/${addressId}/default`, {
-            method: 'PUT',
-            headers: authHeader(),
-        });
-        fetchAddresses();
+        setAddrError('');
+        try {
+            const res = await fetch(`/api/me/addresses/${addressId}/default`, {
+                method: 'PUT',
+                headers: authHeader(),
+            });
+            if (!res.ok) {
+                const apiError = await readApiError(res, 'Nie udało się ustawić domyślnego adresu.');
+                setAddrError(apiError.message);
+                return;
+            }
+            fetchAddresses();
+        } catch {
+            setAddrError('Błąd połączenia z serwerem.');
+        }
     }
 
     function startEditAddress(ca) {
@@ -145,33 +167,43 @@ function AccountPage() {
 
     async function saveEditAddress(addressId) {
         setAddrError('');
-        const res = await fetch(`/api/me/addresses/${addressId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', ...authHeader() },
-            body: JSON.stringify(editAddrForm),
-        });
-        if (res.ok) {
+        try {
+            const res = await fetch(`/api/me/addresses/${addressId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', ...authHeader() },
+                body: JSON.stringify(editAddrForm),
+            });
+            if (!res.ok) {
+                const apiError = await readApiError(res, 'Nie udało się zapisać adresu.');
+                setAddrError(apiError.message);
+                return;
+            }
             setEditingAddrId(null);
             fetchAddresses();
-        } else {
-            setAddrError('Nie udało się zapisać adresu.');
+        } catch {
+            setAddrError('Błąd połączenia z serwerem.');
         }
     }
 
     async function submitAddAddress(e) {
         e.preventDefault();
         setAddrError('');
-        const res = await fetch('/api/me/addresses', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...authHeader() },
-            body: JSON.stringify(addForm),
-        });
-        if (res.ok) {
+        try {
+            const res = await fetch('/api/me/addresses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...authHeader() },
+                body: JSON.stringify(addForm),
+            });
+            if (!res.ok) {
+                const apiError = await readApiError(res, 'Nie udało się dodać adresu.');
+                setAddrError(apiError.message);
+                return;
+            }
             setShowAddForm(false);
             setAddForm(emptyAddressForm);
             fetchAddresses();
-        } else {
-            setAddrError('Nie udało się dodać adresu.');
+        } catch {
+            setAddrError('Błąd połączenia z serwerem.');
         }
     }
 

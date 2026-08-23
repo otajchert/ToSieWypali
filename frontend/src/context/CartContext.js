@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
+import { readApiError } from '../apiErrors';
 
 const CartContext = createContext(null);
 
@@ -13,18 +14,6 @@ function readGuest() {
 
 function saveGuest(items) {
     localStorage.setItem(GUEST_KEY, JSON.stringify(items));
-}
-
-async function readErrorMessage(response, fallback) {
-    const text = await response.text();
-    if (!text) return fallback;
-
-    try {
-        const body = JSON.parse(text);
-        return body.detail || body.message || fallback;
-    } catch {
-        return text;
-    }
 }
 
 function normalizeItem(si) {
@@ -137,8 +126,8 @@ export function CartProvider({ children }) {
                 body: JSON.stringify({ productId: product.id, qty }),
             });
             if (!res.ok) {
-                const msg = await readErrorMessage(res, 'Błąd dodawania do koszyka');
-                throw new Error(msg || 'Błąd dodawania do koszyka');
+                const apiError = await readApiError(res, 'Nie udało się dodać produktu do koszyka.');
+                throw new Error(apiError.message);
             }
             const fresh = await fetchFromServer(user.token);
             if (fresh) setItems(fresh);

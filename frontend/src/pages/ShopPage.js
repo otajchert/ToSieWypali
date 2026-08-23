@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { readApiError } from '../apiErrors';
 import './ShopPage.css';
 
 function ShopPage() {
@@ -15,8 +16,11 @@ function ShopPage() {
 
     useEffect(() => {
         fetch('/api/products')
-            .then(res => {
-                if (!res.ok) throw new Error('Błąd pobierania produktów');
+            .then(async res => {
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się pobrać produktów.');
+                    throw new Error(apiError.message);
+                }
                 return res.json();
             })
             .then(data => {

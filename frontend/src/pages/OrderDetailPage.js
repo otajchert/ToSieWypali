@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getOrderStatusOptions } from '../orderStatuses';
+import { readApiError } from '../apiErrors';
 import './OrderDetailPage.css';
 
 const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}`);
@@ -14,6 +15,7 @@ function OrderDetailPage() {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [actionError, setActionError] = useState('');
     const [updating, setUpdating] = useState(false);
 
     const isAdmin = user?.role === 'ADMIN';
@@ -25,9 +27,16 @@ function OrderDetailPage() {
             fetch(orderPath, { headers: authHeader() }),
             fetch(`${orderPath}/items`, { headers: authHeader() }),
         ])
-            .then(([orderRes, itemsRes]) => {
-                if (!orderRes.ok) throw new Error('Nie znaleziono zamówienia');
-                return Promise.all([orderRes.json(), itemsRes.ok ? itemsRes.json() : []]);
+            .then(async ([orderRes, itemsRes]) => {
+                if (!orderRes.ok) {
+                    const apiError = await readApiError(orderRes, 'Nie znaleziono zamówienia.');
+                    throw new Error(apiError.message);
+                }
+                if (!itemsRes.ok) {
+                    const apiError = await readApiError(itemsRes, 'Nie udało się pobrać produktów zamówienia.');
+                    throw new Error(apiError.message);
+                }
+                return Promise.all([orderRes.json(), itemsRes.json()]);
             })
             .then(([orderData, itemsData]) => {
                 setOrder(orderData);
@@ -40,13 +49,21 @@ function OrderDetailPage() {
     async function changeStatus(statusId) {
         if (!statusId) return;
         setUpdating(true);
+        setActionError('');
         try {
             const res = await fetch(`/api/orders/${id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json', ...authHeader() },
                 body: JSON.stringify({ statusId }),
             });
-            if (res.ok) setOrder(await res.json());
+            if (res.ok) {
+                setOrder(await res.json());
+            } else {
+                const apiError = await readApiError(res, 'Nie udało się zmienić statusu zamówienia.');
+                setActionError(apiError.message);
+            }
+        } catch {
+            setActionError('Błąd połączenia z serwerem.');
         } finally {
             setUpdating(false);
         }
@@ -73,6 +90,8 @@ function OrderDetailPage() {
                             : '—'}
                     </span>
                 </div>
+
+                {actionError && <p className="od-action-error">{actionError}</p>}
 
                 <div className="od-meta">
                     {isAdmin && (
