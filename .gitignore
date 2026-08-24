@@ -36,6 +36,7 @@ frontend/dist/
 # Database
 *.sql.backup
 *.db
+/backup_*.sql
 
 # OS
 .DS_Store

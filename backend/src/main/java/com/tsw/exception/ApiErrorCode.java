@@ -28,6 +28,7 @@ public enum ApiErrorCode {
     INVALID_ORDER_STATUS_TRANSITION(HttpStatus.CONFLICT, "Invalid order status transition"),
     PRODUCT_IN_USE(HttpStatus.CONFLICT, "Product in use"),
     CATEGORY_NOT_EMPTY(HttpStatus.CONFLICT, "Category not empty"),
+    LAST_SHIPPING_METHOD_REQUIRED(HttpStatus.CONFLICT, "Last shipping method required"),
     DATA_CONFLICT(HttpStatus.CONFLICT, "Data conflict"),
     FILE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "File too large"),
     STORAGE_OPERATION_FAILED(HttpStatus.BAD_GATEWAY, "Storage operation failed"),

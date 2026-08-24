@@ -14,6 +14,8 @@ import java.util.UUID;
 
 @Repository
 public interface ShopOrderRepository extends JpaRepository<ShopOrder, UUID> {
+    List<ShopOrder> findAllByOrderByOrderDateDescIdDesc();
+
     List<ShopOrder> findByClientId(UUID clientId);
 
     Optional<ShopOrder> findByIdAndClientId(UUID orderId, UUID clientId);

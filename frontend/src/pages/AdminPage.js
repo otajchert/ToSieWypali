@@ -6,6 +6,18 @@ import { getOrderStatusOptions } from '../orderStatuses';
 import { readApiError } from '../apiErrors';
 import './AdminPage.css';
 
+function sortOrdersNewestFirst(orders) {
+    if (!Array.isArray(orders)) return [];
+
+    return [...orders].sort((first, second) => {
+        const firstTimestamp = Date.parse(first?.orderDate);
+        const secondTimestamp = Date.parse(second?.orderDate);
+        const safeFirstTimestamp = Number.isNaN(firstTimestamp) ? Number.NEGATIVE_INFINITY : firstTimestamp;
+        const safeSecondTimestamp = Number.isNaN(secondTimestamp) ? Number.NEGATIVE_INFINITY : secondTimestamp;
+        return safeSecondTimestamp - safeFirstTimestamp;
+    });
+}
+
 function AdminPage() {
     const { user, authHeader } = useAuth();
     const [orders, setOrders] = useState([]);
@@ -18,6 +30,13 @@ function AdminPage() {
     const [catSaving, setCatSaving] = useState(false);
     const [deleteDialog, setDeleteDialog] = useState(null);
 
+    const [shippingMethods, setShippingMethods] = useState([]);
+    const [shippingLoading, setShippingLoading] = useState(true);
+    const [newShippingName, setNewShippingName] = useState('');
+    const [newShippingPrice, setNewShippingPrice] = useState('0.00');
+    const [shippingSaving, setShippingSaving] = useState(false);
+    const [deletingShippingId, setDeletingShippingId] = useState(null);
+
     useEffect(() => {
         if (!user || user.role !== 'ADMIN') return;
         fetch('/api/orders', { headers: authHeader() })
@@ -29,12 +48,31 @@ function AdminPage() {
                 }
                 return res.json();
             })
-            .then(data => setOrders(data))
+            .then(data => setOrders(sortOrdersNewestFirst(data)))
             .catch(() => {
                 setOrders([]);
                 setError('Błąd połączenia z serwerem.');
             })
             .finally(() => setLoading(false));
+    }, [user]);
+
+    useEffect(() => {
+        if (!user || user.role !== 'ADMIN') return;
+
+        fetch('/api/shipping-methods', { headers: authHeader() })
+            .then(async res => {
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się pobrać metod dostawy.');
+                    throw new Error(apiError.message);
+                }
+                return res.json();
+            })
+            .then(data => setShippingMethods(data))
+            .catch(e => {
+                setShippingMethods([]);
+                setError(e.message || 'Błąd połączenia z serwerem.');
+            })
+            .finally(() => setShippingLoading(false));
     }, [user]);
 
     async function changeStatus(orderId, statusId) {
@@ -133,6 +171,71 @@ function AdminPage() {
         }
     }
 
+    async function addShippingMethod(e) {
+        e.preventDefault();
+        const name = newShippingName.trim();
+        const normalizedPrice = newShippingPrice.trim().replace(',', '.');
+
+        if (!name) return;
+        if (!/^\d+(?:\.\d{1,2})?$/.test(normalizedPrice)) {
+            setError('Cena dostawy musi być nieujemną kwotą z najwyżej dwoma miejscami po przecinku.');
+            return;
+        }
+
+        setShippingSaving(true);
+        setError('');
+        try {
+            const res = await fetch('/api/shipping-methods', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...authHeader() },
+                body: JSON.stringify({ name, price: Number(normalizedPrice) }),
+            });
+            if (res.ok) {
+                const created = await res.json();
+                setShippingMethods(prev => [...prev, created]);
+                setNewShippingName('');
+                setNewShippingPrice('0.00');
+            } else {
+                const apiError = await readApiError(res, 'Nie udało się dodać metody dostawy.');
+                setError(apiError.message);
+            }
+        } catch {
+            setError('Błąd połączenia z serwerem.');
+        } finally {
+            setShippingSaving(false);
+        }
+    }
+
+    async function deleteShippingMethod(method) {
+        const confirmed = window.confirm(
+            `Usunąć metodę dostawy „${method.name}” z dostępnych opcji? `
+            + 'Wcześniejsze zamówienia zachowają tę metodę.'
+        );
+        if (!confirmed) return;
+
+        setDeletingShippingId(method.id);
+        setError('');
+        try {
+            const res = await fetch(`/api/shipping-methods/${method.id}`, {
+                method: 'DELETE',
+                headers: authHeader(),
+            });
+            if (res.ok) {
+                setShippingMethods(prev => prev.filter(item => item.id !== method.id));
+            } else {
+                const apiError = await readApiError(
+                    res,
+                    'Nie udało się usunąć metody dostawy z dostępnych opcji.'
+                );
+                setError(apiError.message);
+            }
+        } catch {
+            setError('Błąd połączenia z serwerem.');
+        } finally {
+            setDeletingShippingId(null);
+        }
+    }
+
     if (!user || user.role !== 'ADMIN') {
         return (
             <div className="admin-page">
@@ -148,7 +251,6 @@ function AdminPage() {
             <div className="admin-inner">
                 <div className="admin-header">
                     <h1 className="admin-title">Panel administracyjny</h1>
-                    <Link to="/admin/nowy-produkt" className="admin-add-btn">+ Dodaj produkt</Link>
                 </div>
 
                 {error && <p className="admin-error">{error}</p>}
@@ -251,6 +353,69 @@ function AdminPage() {
                             {catSaving ? 'Dodawanie...' : '+ Dodaj'}
                         </button>
                     </form>
+                </section>
+
+                <section className="admin-section">
+                    <h2 className="section-title">Metody dostawy</h2>
+
+                    {shippingLoading ? (
+                        <p className="admin-hint">Ładowanie...</p>
+                    ) : (
+                        <div className="shipping-list">
+                            {shippingMethods.length === 0 && (
+                                <p className="admin-hint">Brak metod dostawy.</p>
+                            )}
+                            {shippingMethods.map(method => (
+                                <div key={method.id} className="shipping-row">
+                                    <span className="shipping-name">{method.name}</span>
+                                    <span className="shipping-price">
+                                        {Number(method.price).toFixed(2).replace('.', ',')} zł
+                                    </span>
+                                    <button
+                                        className="cat-delete-btn"
+                                        type="button"
+                                        onClick={() => deleteShippingMethod(method)}
+                                        title={shippingMethods.length <= 1
+                                            ? 'Najpierw dodaj inną metodę dostawy'
+                                            : 'Usuń metodę dostawy'}
+                                        aria-label={`Usuń metodę dostawy ${method.name}`}
+                                        disabled={shippingMethods.length <= 1 || deletingShippingId === method.id}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    <form className="shipping-add-form" onSubmit={addShippingMethod}>
+                        <input
+                            className="shipping-add-input shipping-name-input"
+                            value={newShippingName}
+                            onChange={e => setNewShippingName(e.target.value)}
+                            placeholder="Nazwa metody dostawy"
+                            aria-label="Nazwa metody dostawy"
+                            maxLength={100}
+                            required
+                        />
+                        <input
+                            className="shipping-add-input shipping-price-input"
+                            value={newShippingPrice}
+                            onChange={e => setNewShippingPrice(e.target.value)}
+                            placeholder="Cena"
+                            aria-label="Cena dostawy"
+                            inputMode="decimal"
+                            required
+                        />
+                        <button className="cat-add-btn" type="submit" disabled={shippingSaving}>
+                            {shippingSaving ? 'Dodawanie...' : '+ Dodaj'}
+                        </button>
+                    </form>
+                </section>
+
+                <section className="admin-section">
+                    <h2 className="section-title">Dodaj nowy produkt</h2>
+                    <Link to="/admin/nowy-produkt" className="admin-add-btn">+ Dodaj produkt</Link>
                 </section>
             </div>
 

@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { readApiError } from '../apiErrors';
 import './CheckoutPage.css';
 
-const PICKUP_SHIPPING_ID = '00000000-0000-0000-0000-000000000033';
-
 const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}`);
+const formatPrice = value => Number(value).toFixed(2).replace('.', ',');
 
 function CheckoutPage() {
     const { items, clearCart } = useCart();
@@ -17,17 +16,63 @@ function CheckoutPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [placedOrderId, setPlacedOrderId] = useState(null);
+    const [shippingMethods, setShippingMethods] = useState([]);
+    const [selectedShippingId, setSelectedShippingId] = useState('');
+    const [shippingLoading, setShippingLoading] = useState(true);
+    const [shippingError, setShippingError] = useState('');
 
     const total = items.reduce((sum, i) => sum + parseFloat(i.price) * i.qty, 0);
     const totalQty = items.reduce((sum, i) => sum + i.qty, 0);
+    const selectedShipping = shippingMethods.find(method => method.id === selectedShippingId);
+    const shippingPrice = selectedShipping ? Number(selectedShipping.price) : 0;
+    const grandTotal = total + shippingPrice;
+
+    useEffect(() => {
+        const controller = new AbortController();
+
+        async function loadShippingMethods() {
+            setShippingLoading(true);
+            setShippingError('');
+            try {
+                const res = await fetch('/api/shipping-methods', { signal: controller.signal });
+                if (!res.ok) {
+                    const apiError = await readApiError(res, 'Nie udało się pobrać metod dostawy.');
+                    throw new Error(apiError.message);
+                }
+
+                const methods = await res.json();
+                if (!Array.isArray(methods)) throw new Error('Nie udało się pobrać metod dostawy.');
+
+                setShippingMethods(methods);
+                setSelectedShippingId(current =>
+                    methods.some(method => method.id === current) ? current : (methods[0]?.id || '')
+                );
+            } catch (e) {
+                if (e.name === 'AbortError') return;
+                setShippingMethods([]);
+                setSelectedShippingId('');
+                setShippingError(e.message || 'Błąd połączenia z serwerem.');
+            } finally {
+                if (!controller.signal.aborted) setShippingLoading(false);
+            }
+        }
+
+        loadShippingMethods();
+        return () => controller.abort();
+    }, []);
 
     async function handlePlaceOrder() {
+        if (!selectedShipping) {
+            setError('Wybierz metodę dostawy.');
+            return;
+        }
+
         setLoading(true);
         setError(null);
 
         const body = {
             items: items.map(i => ({ productId: i.productId, qty: i.qty })),
-            shippingMethodId: PICKUP_SHIPPING_ID,
+            shippingMethodId: selectedShipping.id,
         };
 
         try {
@@ -80,14 +125,41 @@ function CheckoutPage() {
 
                         <section className="checkout-section">
                             <h2 className="checkout-section-title">Sposób odbioru</h2>
-                            <div className="checkout-option checkout-option--selected">
-                                <div className="checkout-option-radio" />
-                                <div className="checkout-option-body">
-                                    <span className="checkout-option-label">Odbiór osobisty</span>
-                                    <span className="checkout-option-desc">Odbierz zamówienie bezpośrednio w pracowni</span>
+                            {shippingLoading ? (
+                                <p className="checkout-hint">Ładowanie metod dostawy...</p>
+                            ) : shippingError ? (
+                                <p className="checkout-error checkout-load-error">{shippingError}</p>
+                            ) : shippingMethods.length === 0 ? (
+                                <p className="checkout-hint">Brak dostępnych metod dostawy.</p>
+                            ) : (
+                                <div className="checkout-options">
+                                    {shippingMethods.map(method => {
+                                        const selected = method.id === selectedShippingId;
+                                        return (
+                                            <label
+                                                key={method.id}
+                                                className={`checkout-option checkout-option--interactive${selected ? ' checkout-option--selected' : ''}`}
+                                            >
+                                                <input
+                                                    className="checkout-option-radio-input"
+                                                    type="radio"
+                                                    name="shippingMethod"
+                                                    value={method.id}
+                                                    checked={selected}
+                                                    onChange={() => {
+                                                        setSelectedShippingId(method.id);
+                                                        setError(null);
+                                                    }}
+                                                />
+                                                <span className="checkout-option-body">
+                                                    <span className="checkout-option-label">{method.name}</span>
+                                                </span>
+                                                <span className="checkout-option-price">{formatPrice(method.price)} zł</span>
+                                            </label>
+                                        );
+                                    })}
                                 </div>
-                                <span className="checkout-option-price">0,00 zł</span>
-                            </div>
+                            )}
                         </section>
                     </div>
 
@@ -117,22 +189,23 @@ function CheckoutPage() {
                             <div className="checkout-totals">
                                 <div className="checkout-total-row">
                                     <span>Produkty ({totalQty} szt.)</span>
-                                    <span>{total.toFixed(2).replace('.', ',')} zł</span>
+                                    <span>{formatPrice(total)} zł</span>
                                 </div>
                                 <div className="checkout-total-row">
                                     <span>Dostawa</span>
-                                    <span>0,00 zł</span>
+                                    <span>{selectedShipping ? `${formatPrice(shippingPrice)} zł` : '—'}</span>
                                 </div>
                                 <div className="checkout-total-divider" />
                                 <div className="checkout-total-row checkout-grand-total">
                                     <span>Razem</span>
-                                    <span>{total.toFixed(2).replace('.', ',')} zł</span>
+                                    <span>{formatPrice(grandTotal)} zł</span>
                                 </div>
                             </div>
 
                             <button
                                 className="btn-place-order"
                                 onClick={() => setShowConfirm(true)}
+                                disabled={shippingLoading || !selectedShipping}
                             >
                                 Złóż zamówienie
                             </button>
@@ -152,11 +225,11 @@ function CheckoutPage() {
                         </div>
                         <div className="modal-row">
                             <span className="modal-label">Odbiór</span>
-                            <span className="modal-value">Odbiór osobisty</span>
+                            <span className="modal-value">{selectedShipping?.name}</span>
                         </div>
                         <div className="modal-row modal-row--total">
                             <span className="modal-label">Do zapłaty</span>
-                            <span className="modal-value modal-total">{total.toFixed(2).replace('.', ',')} zł</span>
+                            <span className="modal-value modal-total">{formatPrice(grandTotal)} zł</span>
                         </div>
 
                         {error && <p className="checkout-error">{error}</p>}

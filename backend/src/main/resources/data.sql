@@ -8,8 +8,16 @@ INSERT IGNORE INTO order_status (UniqueID, name) VALUES
 
 UPDATE order_status SET name = 'Zamówienie złożone' WHERE UniqueID = '00000000-0000-0000-0000-000000000021' AND name = 'Nowe';
 
--- sample shipping methods
-INSERT IGNORE INTO shipping_method (UniqueID, name, price) VALUES
-('00000000-0000-0000-0000-000000000031', 'Kurier DPD', 15.99),
-('00000000-0000-0000-0000-000000000032', 'Poczta Polska', 12.50),
-('00000000-0000-0000-0000-000000000033', 'Odbior osobisty', 0.00);
+-- default shipping method
+INSERT IGNORE INTO shipping_method (UniqueID, name, price, active)
+SELECT '00000000-0000-0000-0000-000000000033', 'Odbiór osobisty', 0.00, TRUE
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM shipping_method
+    WHERE active = TRUE
+);
+
+UPDATE shipping_method
+SET name = 'Odbiór osobisty'
+WHERE UniqueID = '00000000-0000-0000-0000-000000000033'
+AND name = 'Odbior osobisty';

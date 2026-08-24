@@ -24,6 +24,7 @@ const ERROR_MESSAGES = {
     INVALID_ORDER_STATUS_TRANSITION: 'Ta zmiana statusu zamówienia nie jest dozwolona.',
     PRODUCT_IN_USE: 'Nie można usunąć produktu przypisanego do zamówienia.',
     CATEGORY_NOT_EMPTY: 'Kategoria jest przypisana do produktów.',
+    LAST_SHIPPING_METHOD_REQUIRED: 'Najpierw dodaj inną metodę dostawy, a dopiero potem usuń tę metodę.',
     DATA_CONFLICT: 'Nie można wykonać operacji z powodu konfliktu danych.',
     FILE_TOO_LARGE: 'Przesłany plik jest zbyt duży.',
     STORAGE_OPERATION_FAILED: 'Nie udało się zapisać pliku.',
@@ -77,6 +78,11 @@ const ERROR_MESSAGES = {
     ORDER_ITEM_REQUIRED: 'Pozycja zamówienia jest wymagana.',
     TOO_MANY_ORDER_ITEMS: 'Zamówienie zawiera zbyt wiele produktów.',
     SHIPPING_METHOD_REQUIRED: 'Wybierz metodę dostawy.',
+    SHIPPING_METHOD_NAME_REQUIRED: 'Podaj nazwę metody dostawy.',
+    SHIPPING_METHOD_NAME_TOO_LONG: 'Nazwa metody dostawy jest zbyt długa.',
+    SHIPPING_METHOD_PRICE_REQUIRED: 'Podaj cenę dostawy.',
+    SHIPPING_METHOD_PRICE_MUST_NOT_BE_NEGATIVE: 'Cena dostawy nie może być ujemna.',
+    INVALID_SHIPPING_METHOD_PRICE_FORMAT: 'Cena dostawy może mieć najwyżej dwie cyfry po przecinku.',
     ORDER_STATUS_REQUIRED: 'Wybierz status zamówienia.',
 };
 

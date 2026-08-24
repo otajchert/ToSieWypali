@@ -77,7 +77,7 @@ public class OrderService {
     }
 
     public List<ShopOrder> findAll() {
-        return orderRepository.findAll();
+        return orderRepository.findAllByOrderByOrderDateDescIdDesc();
     }
 
     public List<ShopOrder> findByClient(UUID clientId) {
@@ -138,7 +138,7 @@ public class OrderService {
                         ))
                 : null;
 
-        ShippingMethod shippingMethod = shippingMethodRepository.findById(req.shippingMethodId())
+        ShippingMethod shippingMethod = shippingMethodRepository.findByIdAndActiveTrue(req.shippingMethodId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ApiErrorCode.SHIPPING_METHOD_NOT_FOUND,
                         "Nie znaleziono metody dostawy"
