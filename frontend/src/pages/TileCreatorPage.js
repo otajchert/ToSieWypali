@@ -318,11 +318,7 @@ function TileCreatorPage() {
         return (
             <div className="tile-too-small-msg">
                 <h2>Kreator Kafelków</h2>
-                <p>
-                    Mamy interaktywne narzędzie do projektowania własnych kafelków Cuenca —
-                    ale Twój ekran jest za mały, żeby wygodnie rysować.
-                    Zapraszamy na komputer lub tablet!
-                </p>
+                <p>Twój ekran jest za mały</p>
             </div>
         );
     }

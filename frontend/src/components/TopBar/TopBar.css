@@ -8,6 +8,7 @@
 
 .topbar-inner {
     max-width: 1280px;
+    width: 100%;
     margin: 0 auto;
     padding: 0 24px;
     height: 64px;
@@ -32,6 +33,7 @@
 
 .search-form {
     flex: 1;
+    min-width: 0;
     max-width: 360px;
     display: flex;
     align-items: center;
@@ -49,6 +51,8 @@
 
 .search-input {
     flex: 1;
+    min-width: 0;
+    width: 100%;
     background: transparent;
     border: none;
     outline: none;
@@ -270,4 +274,87 @@
     font-family: 'Recoleta', serif;
     color: #6b1e1a;
     font-size: 0.9rem;
+}
+
+.desktop-account-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mobile-menu-btn,
+.mobile-account-link,
+.mobile-menu {
+    display: none;
+}
+
+@media (max-width: 899px) {
+    .topbar-inner {
+        padding: 0 12px;
+        gap: 8px;
+    }
+
+    .desktop-nav,
+    .desktop-search,
+    .desktop-account-actions {
+        display: none;
+    }
+
+    .mobile-menu-btn,
+    .mobile-account-link {
+        display: flex;
+    }
+
+    .mobile-menu-btn {
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        background: transparent;
+        border: none;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .nav-actions {
+        gap: 4px;
+    }
+
+    .mobile-menu {
+        display: block;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        left: 0;
+        max-height: calc(100vh - 64px);
+        overflow-y: auto;
+        padding: 8px 0;
+        background: #fff;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .mobile-search {
+        max-width: none;
+        margin: 4px 12px 8px;
+        background: #f5e6d3;
+        border-color: #e8e0d8;
+    }
+
+    .mobile-search .search-input {
+        color: #6b1e1a;
+    }
+
+    .mobile-search .search-input::placeholder {
+        color: #8c7064;
+    }
+
+    .mobile-search .search-btn {
+        color: #6b1e1a;
+    }
+
+    .mobile-category-link {
+        padding-left: 28px;
+        color: #6b5a4e;
+    }
 }

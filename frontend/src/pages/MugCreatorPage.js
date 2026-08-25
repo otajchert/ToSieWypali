@@ -396,11 +396,7 @@ function MugCreatorPage() {
         return (
             <div className="mug-too-small-msg">
                 <h2>Kreator Kubków</h2>
-                <p>
-                    Mamy interaktywne narzędzie 3D do projektowania własnych kubków —
-                    ale Twój ekran jest za mały, żeby wygodnie z niego korzystać.
-                    Zapraszamy na komputer lub tablet!
-                </p>
+                <p>Twój ekran jest za mały</p>
             </div>
         );
     }
