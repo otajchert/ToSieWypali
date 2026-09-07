@@ -25,12 +25,14 @@ public class BackendArchitectureTest {
     static final ArchRule layer_dependencies_should_be_respected = layeredArchitecture()
             .consideringAllDependencies()
             .layer("Controller").definedBy("..controller..")
+            .layer("Security").definedBy("..config..")
             .layer("Service").definedBy("..service..")
             .layer("Repository").definedBy("..repository..")
             .whereLayer("Controller").mayNotBeAccessedByAnyLayer()
-            .whereLayer("Service").mayOnlyBeAccessedByLayers("Controller")
+            .whereLayer("Security").mayOnlyBeAccessedByLayers("Controller")
+            .whereLayer("Service").mayOnlyBeAccessedByLayers("Controller", "Security")
             .whereLayer("Repository").mayOnlyBeAccessedByLayers("Service")
-            .because("requests should pass from controllers through services to repositories");
+            .because("web and security requests should pass through services to repositories");
 
     @ArchTest
     static final ArchRule top_level_packages_should_be_free_of_cycles = slices()
@@ -43,6 +45,18 @@ public class BackendArchitectureTest {
             .that().resideInAPackage("..controller..")
             .should().dependOnClassesThat().resideInAPackage("..repository..")
             .because("controllers should access persistence through services");
+
+    @ArchTest
+    static final ArchRule security_should_not_access_repositories_directly = noClasses()
+            .that().resideInAPackage("..config..")
+            .should().dependOnClassesThat().resideInAPackage("..repository..")
+            .because("security components should access client data through services");
+
+    @ArchTest
+    static final ArchRule security_should_not_depend_on_persistence_models = noClasses()
+            .that().resideInAPackage("..config..")
+            .should().dependOnClassesThat().resideInAPackage("..model..")
+            .because("security services should expose neutral authentication data instead of entities");
 
     @ArchTest
     static final ArchRule controllers_should_not_expose_persistence_models = noClasses()

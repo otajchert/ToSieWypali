@@ -1,6 +1,6 @@
 package com.tsw.config;
 
-import com.tsw.repository.ClientRepository;
+import com.tsw.service.AuthenticationService;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,11 +20,11 @@ import java.util.UUID;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final ClientRepository clientRepository;
+    private final AuthenticationService authenticationService;
 
-    public JwtFilter(JwtUtil jwtUtil, ClientRepository clientRepository) {
+    public JwtFilter(JwtUtil jwtUtil, AuthenticationService authenticationService) {
         this.jwtUtil = jwtUtil;
-        this.clientRepository = clientRepository;
+        this.authenticationService = authenticationService;
     }
 
     @Override
@@ -37,12 +37,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 String subject = jwtUtil.parse(token).getSubject();
                 if (subject != null) {
                     UUID clientId = UUID.fromString(subject);
-                    clientRepository.findById(clientId).ifPresent(client -> {
-                        AuthenticatedClient principal = new AuthenticatedClient(client.getId());
+                    authenticationService.findAuthenticatedClient(clientId).ifPresent(client -> {
+                        AuthenticatedClient principal = new AuthenticatedClient(client.id());
                         var authentication = new UsernamePasswordAuthenticationToken(
                                 principal,
                                 null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + client.getRole()))
+                                List.of(new SimpleGrantedAuthority("ROLE_" + client.role()))
                         );
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     });
