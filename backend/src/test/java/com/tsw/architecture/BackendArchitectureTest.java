@@ -71,6 +71,12 @@ public class BackendArchitectureTest {
             .because("transport-specific types belong to the web adapter");
 
     @ArchTest
+    static final ArchRule services_should_not_depend_on_infrastructure = noClasses()
+            .that().resideInAPackage("..service..")
+            .should().dependOnClassesThat().resideInAPackage("..infrastructure..")
+            .because("services should depend on ports instead of concrete infrastructure adapters");
+
+    @ArchTest
     static final ArchRule models_should_not_depend_on_outer_layers = noClasses()
             .that().resideInAPackage("..model..")
             .should().dependOnClassesThat().resideInAnyPackage(

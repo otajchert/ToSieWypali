@@ -1,59 +1,63 @@
-package com.tsw.service;
+package com.tsw.infrastructure.storage;
 
 import com.tsw.exception.StorageOperationException;
+import com.tsw.storage.FileStorage;
+import com.tsw.storage.FileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-@Service
-public class SupabaseStorageService {
+@Component
+public class SupabaseStorageAdapter implements FileStorage {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SupabaseStorageService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SupabaseStorageAdapter.class);
 
     private final String supabaseUrl;
     private final String serviceKey;
     private final String bucket;
-    private final RestClient restClient = RestClient.create();
+    private final RestClient restClient;
 
-    public SupabaseStorageService(
+    public SupabaseStorageAdapter(
             @Value("${supabase.url}") String supabaseUrl,
             @Value("${supabase.key}") String serviceKey,
-            @Value("${supabase.bucket:products}") String bucket) {
+            @Value("${supabase.bucket:products}") String bucket,
+            RestClient.Builder restClientBuilder) {
         String baseUrl = supabaseUrl.trim().replaceAll("/+$", "");
         this.supabaseUrl = baseUrl.replaceFirst("/rest/v1$", "");
         this.serviceKey = serviceKey;
         this.bucket = bucket;
+        this.restClient = restClientBuilder.build();
     }
 
-    public String upload(MultipartFile file, String objectPath) {
-        String contentType = file.getContentType() != null
-                ? file.getContentType()
+    @Override
+    public String upload(FileUpload file, String objectPath) {
+        String contentType = file.contentType() != null
+                ? file.contentType()
                 : "application/octet-stream";
         try {
             restClient.post()
                     .uri(supabaseUrl + "/storage/v1/object/" + bucket + "/" + objectPath)
                     .header("Authorization", "Bearer " + serviceKey)
                     .contentType(MediaType.parseMediaType(contentType))
-                    .body(file.getBytes())
+                    .body(file.content())
                     .retrieve()
                     .toBodilessEntity();
-        } catch (RestClientException | IOException exception) {
+        } catch (RestClientException exception) {
             throw new StorageOperationException(exception);
         }
 
         return supabaseUrl + "/storage/v1/object/public/" + bucket + "/" + objectPath;
     }
 
+    @Override
     public void delete(String publicUrl) {
         if (publicUrl == null) return;
 

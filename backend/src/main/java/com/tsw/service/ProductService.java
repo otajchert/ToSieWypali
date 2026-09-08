@@ -15,9 +15,10 @@ import com.tsw.repository.CategoryRepository;
 import com.tsw.repository.OrderProductRepository;
 import com.tsw.repository.ProductImageRepository;
 import com.tsw.repository.ProductRepository;
+import com.tsw.storage.FileStorage;
+import com.tsw.storage.FileUpload;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -32,20 +33,20 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
     private final CartItemRepository cartItemRepository;
     private final OrderProductRepository orderProductRepository;
-    private final SupabaseStorageService storageService;
+    private final FileStorage fileStorage;
 
     public ProductService(ProductRepository productRepository,
                           ProductImageRepository productImageRepository,
                           CategoryRepository categoryRepository,
                           CartItemRepository cartItemRepository,
                           OrderProductRepository orderProductRepository,
-                          SupabaseStorageService storageService) {
+                          FileStorage fileStorage) {
         this.productRepository = productRepository;
         this.productImageRepository = productImageRepository;
         this.categoryRepository = categoryRepository;
         this.cartItemRepository = cartItemRepository;
         this.orderProductRepository = orderProductRepository;
-        this.storageService = storageService;
+        this.fileStorage = fileStorage;
     }
 
     @Transactional(readOnly = true)
@@ -81,15 +82,15 @@ public class ProductService {
         }
         cartItemRepository.deleteByProductId(id);
         for (ProductImage image : product.getImages()) {
-            storageService.delete(image.getImageUrl());
+            fileStorage.delete(image.getImageUrl());
         }
         if (product.getPhoto() != null) {
-            storageService.delete(product.getPhoto());
+            fileStorage.delete(product.getPhoto());
         }
         productRepository.delete(product);
     }
 
-    public ProductImageResponse addGalleryImage(UUID productId, MultipartFile file) {
+    public ProductImageResponse addGalleryImage(UUID productId, FileUpload file) {
         Product product = getProduct(productId);
 
         String publicUrl = saveFile(file, "products");
@@ -110,7 +111,7 @@ public class ProductService {
     public void removeGalleryImage(UUID productId, UUID imageId) {
         getProduct(productId);
         ProductImage image = getProductImage(productId, imageId);
-        storageService.delete(image.getImageUrl());
+        fileStorage.delete(image.getImageUrl());
         productImageRepository.delete(image);
     }
 
@@ -140,11 +141,11 @@ public class ProductService {
         return toResponse(productRepository.save(product));
     }
 
-    public ProductResponse setMainPhoto(UUID productId, MultipartFile file) {
+    public ProductResponse setMainPhoto(UUID productId, FileUpload file) {
         Product product = getProduct(productId);
 
         if (product.getPhoto() != null) {
-            storageService.delete(product.getPhoto());
+            fileStorage.delete(product.getPhoto());
         }
 
         String publicUrl = saveFile(file, "products");
@@ -174,13 +175,13 @@ public class ProductService {
         product.setCategories(categories);
     }
 
-    private String saveFile(MultipartFile file, String subdir) {
-        String originalName = file.getOriginalFilename();
+    private String saveFile(FileUpload file, String subdir) {
+        String originalName = file.originalFilename();
         String ext = (originalName != null && originalName.contains("."))
                 ? originalName.substring(originalName.lastIndexOf('.'))
                 : "";
         String objectPath = subdir + "/" + UUID.randomUUID() + ext;
-        return storageService.upload(file, objectPath);
+        return fileStorage.upload(file, objectPath);
     }
 
     private Product getProduct(UUID id) {

@@ -4,7 +4,9 @@ import com.tsw.dto.ImageUrlRequest;
 import com.tsw.dto.ProductImageResponse;
 import com.tsw.dto.ProductRequest;
 import com.tsw.dto.ProductResponse;
+import com.tsw.exception.StorageOperationException;
 import com.tsw.service.ProductService;
+import com.tsw.storage.FileUpload;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,7 +63,7 @@ public class ProductController {
     @PostMapping("/{id}/images")
     public ProductImageResponse addImage(@PathVariable UUID id,
                                          @RequestParam("file") MultipartFile file) {
-        return productService.addGalleryImage(id, file);
+        return productService.addGalleryImage(id, toFileUpload(file));
     }
 
     @DeleteMapping("/{id}/images/{imageId}")
@@ -91,6 +94,14 @@ public class ProductController {
     @PostMapping("/{id}/photo")
     public ProductResponse setMainPhoto(@PathVariable UUID id,
                                         @RequestParam("file") MultipartFile file) {
-        return productService.setMainPhoto(id, file);
+        return productService.setMainPhoto(id, toFileUpload(file));
+    }
+
+    private FileUpload toFileUpload(MultipartFile file) {
+        try {
+            return new FileUpload(file.getOriginalFilename(), file.getContentType(), file.getBytes());
+        } catch (IOException exception) {
+            throw new StorageOperationException(exception);
+        }
     }
 }
