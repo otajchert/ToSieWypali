@@ -1,6 +1,9 @@
 package com.tsw.service;
 
 import com.tsw.dto.AddressRequest;
+import com.tsw.dto.AddressResponse;
+import com.tsw.dto.ClientAddressIdResponse;
+import com.tsw.dto.ClientAddressResponse;
 import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.ResourceNotFoundException;
 import com.tsw.model.Address;
@@ -31,12 +34,15 @@ public class AddressService {
         this.clientRepository = clientRepository;
     }
 
-    public List<ClientAddress> findByClient(UUID clientId) {
-        return clientAddressRepository.findByIdClientId(clientId);
+    @Transactional(readOnly = true)
+    public List<ClientAddressResponse> findByClient(UUID clientId) {
+        return clientAddressRepository.findByIdClientId(clientId).stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
-    public ClientAddress add(UUID clientId, AddressRequest req) {
+    public ClientAddressResponse add(UUID clientId, AddressRequest req) {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ApiErrorCode.CLIENT_NOT_FOUND,
@@ -58,7 +64,7 @@ public class AddressService {
         link.setName(req.name());
         link.setIsDefault(req.isDefault());
 
-        return clientAddressRepository.save(link);
+        return toResponse(clientAddressRepository.save(link));
     }
 
     @Transactional
@@ -69,7 +75,7 @@ public class AddressService {
     }
 
     @Transactional
-    public ClientAddress update(UUID clientId, UUID addressId, AddressRequest req) {
+    public ClientAddressResponse update(UUID clientId, UUID addressId, AddressRequest req) {
         ClientAddress link = getAddress(clientId, addressId);
         applyRequest(link.getAddress(), req);
         addressRepository.save(link.getAddress());
@@ -78,7 +84,7 @@ public class AddressService {
             clearDefault(clientId);
         }
         link.setIsDefault(req.isDefault());
-        return clientAddressRepository.save(link);
+        return toResponse(clientAddressRepository.save(link));
     }
 
     @Transactional
@@ -104,6 +110,24 @@ public class AddressService {
         address.setPostalCode(req.postalCode());
         address.setStreetNumber(req.streetNumber());
         address.setFlat(req.flat());
+    }
+
+    private ClientAddressResponse toResponse(ClientAddress link) {
+        ClientAddressId id = link.getId();
+        Address address = link.getAddress();
+        return new ClientAddressResponse(
+                new ClientAddressIdResponse(id.getClientId(), id.getAddressId()),
+                new AddressResponse(
+                        address.getId(),
+                        address.getCity(),
+                        address.getRegion(),
+                        address.getPostalCode(),
+                        address.getStreetNumber(),
+                        address.getFlat()
+                ),
+                link.getIsDefault(),
+                link.getName()
+        );
     }
 
     private ClientAddress getAddress(UUID clientId, UUID addressId) {

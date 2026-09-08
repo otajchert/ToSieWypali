@@ -2,7 +2,7 @@ package com.tsw.controller;
 
 import com.tsw.config.AuthenticatedClient;
 import com.tsw.dto.AddressRequest;
-import com.tsw.model.ClientAddress;
+import com.tsw.dto.ClientAddressResponse;
 import com.tsw.service.AddressService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +30,13 @@ public class AddressController {
     }
 
     @GetMapping
-    public List<ClientAddress> getAll(@AuthenticationPrincipal AuthenticatedClient client) {
+    public List<ClientAddressResponse> getAll(@AuthenticationPrincipal AuthenticatedClient client) {
         return addressService.findByClient(client.id());
     }
 
     @PostMapping
-    public ClientAddress add(@AuthenticationPrincipal AuthenticatedClient client,
-                             @Valid @RequestBody AddressRequest request) {
+    public ClientAddressResponse add(@AuthenticationPrincipal AuthenticatedClient client,
+                                     @Valid @RequestBody AddressRequest request) {
         return addressService.add(client.id(), request);
     }
 
@@ -48,9 +48,9 @@ public class AddressController {
     }
 
     @PutMapping("/{addressId}")
-    public ClientAddress update(@AuthenticationPrincipal AuthenticatedClient client,
-                                @PathVariable UUID addressId,
-                                @Valid @RequestBody AddressRequest request) {
+    public ClientAddressResponse update(@AuthenticationPrincipal AuthenticatedClient client,
+                                        @PathVariable UUID addressId,
+                                        @Valid @RequestBody AddressRequest request) {
         return addressService.update(client.id(), addressId, request);
     }
 

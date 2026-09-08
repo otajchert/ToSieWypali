@@ -59,7 +59,7 @@ public class BackendArchitectureTest {
             .because("security services should expose neutral authentication data instead of entities");
 
     @ArchTest
-    static final ArchRule controllers_should_not_expose_persistence_models = noClasses()
+    static final ArchRule controllers_should_not_depend_on_persistence_models = noClasses()
             .that().resideInAPackage("..controller..")
             .should().dependOnClassesThat().resideInAPackage("..model..")
             .because("the REST contract should use dedicated request and response DTOs");

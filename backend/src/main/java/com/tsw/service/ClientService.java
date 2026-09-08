@@ -1,5 +1,6 @@
 package com.tsw.service;
 
+import com.tsw.dto.ClientResponse;
 import com.tsw.dto.RegisterRequest;
 import com.tsw.dto.UpdateClientRequest;
 import com.tsw.exception.ApiErrorCode;
@@ -11,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -25,24 +25,21 @@ public class ClientService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<Client> findAll() {
-        return clientRepository.findAll();
+    public List<ClientResponse> findAll() {
+        return clientRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Client getById(UUID id) {
-        return clientRepository.findById(id)
-                .orElseThrow(this::clientNotFound);
-    }
-
-    public Optional<Client> findByEmail(String email) {
-        return clientRepository.findByEmail(email);
+    public ClientResponse getById(UUID id) {
+        return toResponse(getClient(id));
     }
 
     private boolean emailExists(String email) {
         return clientRepository.findByEmail(email).isPresent();
     }
 
-    public Client register(RegisterRequest request) {
+    public ClientResponse register(RegisterRequest request) {
         if (emailExists(request.email())) {
             throw new EmailAlreadyUsedException();
         }
@@ -53,11 +50,11 @@ public class ClientService {
         client.setLastName(request.lastName());
         client.setPhoneNumber(request.phoneNumber());
         client.setRole("CLIENT");
-        return clientRepository.save(client);
+        return toResponse(clientRepository.save(client));
     }
 
-    public Client update(UUID id, UpdateClientRequest request) {
-        Client client = getById(id);
+    public ClientResponse update(UUID id, UpdateClientRequest request) {
+        Client client = getClient(id);
         if (request.email() != null && !request.email().equals(client.getEmail())) {
             if (emailExists(request.email())) {
                 throw new EmailAlreadyUsedException();
@@ -73,11 +70,27 @@ public class ClientService {
         if (request.phoneNumber() != null) {
             client.setPhoneNumber(request.phoneNumber());
         }
-        return clientRepository.save(client);
+        return toResponse(clientRepository.save(client));
     }
 
     public void delete(UUID id) {
-        clientRepository.delete(getById(id));
+        clientRepository.delete(getClient(id));
+    }
+
+    private Client getClient(UUID id) {
+        return clientRepository.findById(id)
+                .orElseThrow(this::clientNotFound);
+    }
+
+    private ClientResponse toResponse(Client client) {
+        return new ClientResponse(
+                client.getId(),
+                client.getEmail(),
+                client.getFirstName(),
+                client.getLastName(),
+                client.getPhoneNumber(),
+                client.getRole()
+        );
     }
 
     private ResourceNotFoundException clientNotFound() {

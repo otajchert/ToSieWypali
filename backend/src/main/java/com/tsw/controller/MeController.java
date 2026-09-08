@@ -1,8 +1,8 @@
 package com.tsw.controller;
 
 import com.tsw.config.AuthenticatedClient;
+import com.tsw.dto.ClientResponse;
 import com.tsw.dto.UpdateClientRequest;
-import com.tsw.model.Client;
 import com.tsw.service.ClientService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -25,13 +25,13 @@ public class MeController {
     }
 
     @GetMapping
-    public Client get(@AuthenticationPrincipal AuthenticatedClient client) {
+    public ClientResponse get(@AuthenticationPrincipal AuthenticatedClient client) {
         return clientService.getById(client.id());
     }
 
     @PutMapping
-    public Client update(@AuthenticationPrincipal AuthenticatedClient client,
-                         @Valid @RequestBody UpdateClientRequest request) {
+    public ClientResponse update(@AuthenticationPrincipal AuthenticatedClient client,
+                                 @Valid @RequestBody UpdateClientRequest request) {
         return clientService.update(client.id(), request);
     }
 

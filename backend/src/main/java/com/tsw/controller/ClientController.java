@@ -1,7 +1,7 @@
 package com.tsw.controller;
 
+import com.tsw.dto.ClientResponse;
 import com.tsw.dto.UpdateClientRequest;
-import com.tsw.model.Client;
 import com.tsw.service.ClientService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -27,17 +27,17 @@ public class ClientController {
     }
 
     @GetMapping
-    public List<Client> getAll() {
+    public List<ClientResponse> getAll() {
         return clientService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Client getById(@PathVariable UUID id) {
+    public ClientResponse getById(@PathVariable UUID id) {
         return clientService.getById(id);
     }
 
     @PutMapping("/{id}")
-    public Client update(@PathVariable UUID id, @Valid @RequestBody UpdateClientRequest request) {
+    public ClientResponse update(@PathVariable UUID id, @Valid @RequestBody UpdateClientRequest request) {
         return clientService.update(id, request);
     }
 
