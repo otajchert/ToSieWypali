@@ -91,9 +91,9 @@ function CheckoutPage() {
             }
 
             const order = await res.json();
-            await clearCart();
             setShowConfirm(false);
             setPlacedOrderId(order.id);
+            await clearCart().catch(() => {});
         } catch (e) {
             setError(e.message || 'Nie udało się złożyć zamówienia.');
             setLoading(false);

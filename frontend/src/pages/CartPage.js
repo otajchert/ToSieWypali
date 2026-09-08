@@ -12,6 +12,7 @@ function CartPage() {
     const [outOfStock, setOutOfStock] = useState([]);
     const [dismissedOos, setDismissedOos] = useState(false);
     const [removingOos, setRemovingOos] = useState(false);
+    const [error, setError] = useState(null);
 
     // Once cartReady, check for out-of-stock items.
     // For logged-in users the items already have fresh qtyInStock from the context fetch.
@@ -47,13 +48,37 @@ function CartPage() {
         return () => { cancelled = true; };
     }, [cartReady]); // run once after initial cart load
 
+    async function handleUpdateQty(item, qty) {
+        setError(null);
+        try {
+            await updateQty(item, qty);
+        } catch (e) {
+            setError(e.message);
+        }
+    }
+
+    async function handleRemove(item) {
+        setError(null);
+        try {
+            await removeItem(item);
+        } catch (e) {
+            setError(e.message);
+        }
+    }
+
     async function handleRemoveOutOfStock() {
         setRemovingOos(true);
-        for (const item of outOfStock) {
-            await removeItem(item);
+        setError(null);
+        try {
+            for (const item of outOfStock) {
+                await removeItem(item);
+                setOutOfStock(prev => prev.filter(i => i !== item));
+            }
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setRemovingOos(false);
         }
-        setOutOfStock([]);
-        setRemovingOos(false);
     }
 
     const total = items.reduce((sum, i) => sum + parseFloat(i.price) * i.qty, 0);
@@ -74,6 +99,8 @@ function CartPage() {
         <div className="cart-page">
             <div className="cart-inner">
                 <h1 className="cart-title">Koszyk</h1>
+
+                {error && <p className="cart-error">{error}</p>}
 
                 {outOfStock.length > 0 && !dismissedOos && (
                     <div className="oos-banner">
@@ -139,14 +166,14 @@ function CartPage() {
                                     <div className="cart-item-qty">
                                         <button
                                             className="qty-btn"
-                                            onClick={() => updateQty(item, item.qty - 1)}
+                                            onClick={() => handleUpdateQty(item, item.qty - 1)}
                                             disabled={item.qty <= 1}
                                             aria-label="Zmniejsz ilość"
                                         >−</button>
                                         <span className="qty-value">{item.qty}</span>
                                         <button
                                             className="qty-btn"
-                                            onClick={() => updateQty(item, item.qty + 1)}
+                                            onClick={() => handleUpdateQty(item, item.qty + 1)}
                                             disabled={item.qty >= item.qtyInStock}
                                             aria-label="Zwiększ ilość"
                                         >+</button>
@@ -158,7 +185,7 @@ function CartPage() {
 
                                     <button
                                         className="cart-item-remove"
-                                        onClick={() => removeItem(item)}
+                                        onClick={() => handleRemove(item)}
                                         aria-label="Usuń produkt"
                                     >
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">

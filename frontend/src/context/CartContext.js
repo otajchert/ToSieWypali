@@ -29,6 +29,13 @@ function normalizeItem(si) {
     };
 }
 
+async function assertOk(res, fallback) {
+    if (!res.ok) {
+        const apiError = await readApiError(res, fallback);
+        throw new Error(apiError.message);
+    }
+}
+
 export function CartProvider({ children }) {
     const { user } = useAuth();
     const [items, setItems] = useState([]);
@@ -50,9 +57,10 @@ export function CartProvider({ children }) {
     async function mergeGuestToServer(token) {
         const guests = readGuest();
         if (guests.length === 0) return;
+        const failed = [];
         for (const item of guests) {
             try {
-                await fetch('/api/cart/items', {
+                const res = await fetch('/api/cart/items', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -60,9 +68,12 @@ export function CartProvider({ children }) {
                     },
                     body: JSON.stringify({ productId: item.productId, qty: item.qty }),
                 });
-            } catch {}
+                if (!res.ok) failed.push(item);
+            } catch {
+                failed.push(item);
+            }
         }
-        saveGuest([]);
+        saveGuest(failed);
     }
 
     async function refreshCart() {
@@ -125,10 +136,7 @@ export function CartProvider({ children }) {
                 },
                 body: JSON.stringify({ productId: product.id, qty }),
             });
-            if (!res.ok) {
-                const apiError = await readApiError(res, 'Nie udało się dodać produktu do koszyka.');
-                throw new Error(apiError.message);
-            }
+            await assertOk(res, 'Nie udało się dodać produktu do koszyka.');
             const fresh = await fetchFromServer(user.token);
             if (fresh) setItems(fresh);
         } else {
@@ -161,10 +169,11 @@ export function CartProvider({ children }) {
 
     async function removeItem(item) {
         if (user) {
-            await fetch(`/api/cart/items/${item.id}`, {
+            const res = await fetch(`/api/cart/items/${item.id}`, {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${user.token}` },
             });
+            await assertOk(res, 'Nie udało się usunąć produktu z koszyka.');
             setItems(prev => prev.filter(i => i.id !== item.id));
         } else {
             const updated = readGuest().filter(i => i.productId !== item.productId);
@@ -175,10 +184,11 @@ export function CartProvider({ children }) {
 
     async function clearCart() {
         if (user) {
-            await fetch('/api/cart', {
+            const res = await fetch('/api/cart', {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${user.token}` },
             });
+            await assertOk(res, 'Nie udało się wyczyścić koszyka.');
         } else {
             saveGuest([]);
         }
@@ -196,9 +206,8 @@ export function CartProvider({ children }) {
                 },
                 body: JSON.stringify({ qty }),
             });
-            if (res.ok) {
-                setItems(prev => prev.map(i => i.id === item.id ? { ...i, qty } : i));
-            }
+            await assertOk(res, 'Nie udało się zmienić ilości produktu.');
+            setItems(prev => prev.map(i => i.id === item.id ? { ...i, qty } : i));
         } else {
             const updated = readGuest().map(i =>
                 i.productId === item.productId ? { ...i, qty } : i
