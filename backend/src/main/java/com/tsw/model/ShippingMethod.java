@@ -1,6 +1,5 @@
 package com.tsw.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -29,7 +28,6 @@ public class ShippingMethod {
     public void setName(String name) { this.name = name; }
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }
-    @JsonIgnore
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
 }

@@ -1,6 +1,5 @@
 package com.tsw.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.UUID;
 
@@ -16,7 +15,6 @@ public class Client {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @JsonIgnore
     @Column(nullable = false)
     private String password;
 

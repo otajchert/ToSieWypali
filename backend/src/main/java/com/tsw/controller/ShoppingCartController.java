@@ -2,8 +2,8 @@ package com.tsw.controller;
 
 import com.tsw.config.AuthenticatedClient;
 import com.tsw.dto.AddCartItemRequest;
+import com.tsw.dto.CartItemResponse;
 import com.tsw.dto.UpdateCartItemQuantityRequest;
-import com.tsw.model.CartItem;
 import com.tsw.service.ShoppingCartService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -31,14 +31,14 @@ public class ShoppingCartController {
     }
 
     @GetMapping
-    public List<CartItem> getItems(@AuthenticationPrincipal AuthenticatedClient client) {
+    public List<CartItemResponse> getItems(@AuthenticationPrincipal AuthenticatedClient client) {
         return cartService.getItems(client.id());
     }
 
     @PostMapping("/items")
-    public ResponseEntity<CartItem> addItem(@AuthenticationPrincipal AuthenticatedClient client,
-                                            @Valid @RequestBody AddCartItemRequest request) {
-        CartItem item = cartService.addItem(client.id(), request.productId(), request.qty());
+    public ResponseEntity<CartItemResponse> addItem(@AuthenticationPrincipal AuthenticatedClient client,
+                                                    @Valid @RequestBody AddCartItemRequest request) {
+        CartItemResponse item = cartService.addItem(client.id(), request.productId(), request.qty());
         return ResponseEntity.ok(item);
     }
 
@@ -50,10 +50,10 @@ public class ShoppingCartController {
     }
 
     @PutMapping("/items/{itemId}")
-    public ResponseEntity<CartItem> updateQty(@AuthenticationPrincipal AuthenticatedClient client,
-                                               @PathVariable UUID itemId,
-                                               @Valid @RequestBody UpdateCartItemQuantityRequest request) {
-        CartItem item = cartService.updateItemQty(client.id(), itemId, request.qty());
+    public ResponseEntity<CartItemResponse> updateQty(@AuthenticationPrincipal AuthenticatedClient client,
+                                                      @PathVariable UUID itemId,
+                                                      @Valid @RequestBody UpdateCartItemQuantityRequest request) {
+        CartItemResponse item = cartService.updateItemQty(client.id(), itemId, request.qty());
         return ResponseEntity.ok(item);
     }
 

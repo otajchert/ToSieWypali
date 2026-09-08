@@ -1,6 +1,5 @@
 package com.tsw.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Check;
 import java.util.UUID;
@@ -21,7 +20,6 @@ public class CartItem {
     @Column(name = "UniqueID")
     private UUID id;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     private ShoppingCart cart;

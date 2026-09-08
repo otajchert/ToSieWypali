@@ -1,7 +1,12 @@
 package com.tsw.service;
 
+import com.tsw.dto.AddressResponse;
+import com.tsw.dto.ClientResponse;
 import com.tsw.dto.OrderItemDto;
 import com.tsw.dto.OrderRequest;
+import com.tsw.dto.OrderResponse;
+import com.tsw.dto.OrderStatusResponse;
+import com.tsw.dto.ShippingMethodResponse;
 import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.InsufficientStockException;
 import com.tsw.exception.InvalidOrderStatusTransitionException;
@@ -76,23 +81,28 @@ public class OrderService {
         this.orderStatusRepository = orderStatusRepository;
     }
 
-    public List<ShopOrder> findAll() {
-        return orderRepository.findAllByOrderByOrderDateDescIdDesc();
-    }
-
-    public List<ShopOrder> findByClient(UUID clientId) {
-        return orderRepository.findByClientId(clientId);
-    }
-
-    public ShopOrder getById(UUID id) {
-        return orderRepository.findById(id)
-                .orElseThrow(this::orderNotFound);
+    @Transactional(readOnly = true)
+    public List<OrderResponse> findAll() {
+        return orderRepository.findAllByOrderByOrderDateDescIdDesc().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public ShopOrder getByIdForClient(UUID orderId, UUID clientId) {
-        return orderRepository.findByIdAndClientId(orderId, clientId)
-                .orElseThrow(this::orderNotFound);
+    public List<OrderResponse> findByClient(UUID clientId) {
+        return orderRepository.findByClientId(clientId).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getById(UUID id) {
+        return toResponse(getOrder(id));
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getByIdForClient(UUID orderId, UUID clientId) {
+        return toResponse(getOrderForClient(orderId, clientId));
     }
 
     @Transactional(readOnly = true)
@@ -106,7 +116,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public List<OrderItemDto> getOrderItemsForClient(UUID orderId, UUID clientId) {
-        getByIdForClient(orderId, clientId);
+        getOrderForClient(orderId, clientId);
         return findOrderItems(orderId);
     }
 
@@ -122,7 +132,7 @@ public class OrderService {
     }
 
     @Transactional
-    public ShopOrder create(UUID clientId, OrderRequest req) {
+    public OrderResponse create(UUID clientId, OrderRequest req) {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ApiErrorCode.CLIENT_NOT_FOUND,
@@ -187,11 +197,11 @@ public class OrderService {
             productRepository.save(product);
         }
 
-        return order;
+        return toResponse(order);
     }
 
     @Transactional
-    public ShopOrder updateStatus(UUID orderId, UUID statusId) {
+    public OrderResponse updateStatus(UUID orderId, UUID statusId) {
         OrderStatus status = orderStatusRepository.findById(statusId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ApiErrorCode.ORDER_STATUS_NOT_FOUND,
@@ -203,7 +213,7 @@ public class OrderService {
                 .map(OrderStatus::getId)
                 .orElse(null);
         if (statusId.equals(currentStatusId)) {
-            return order;
+            return toResponse(order);
         }
         Set<UUID> allowedStatuses = currentStatusId == null
                 ? Set.of(PLACED_STATUS_ID)
@@ -213,7 +223,63 @@ public class OrderService {
         }
 
         order.setOrderStatus(status);
-        return orderRepository.save(order);
+        return toResponse(orderRepository.save(order));
+    }
+
+    private ShopOrder getOrder(UUID id) {
+        return orderRepository.findById(id)
+                .orElseThrow(this::orderNotFound);
+    }
+
+    private ShopOrder getOrderForClient(UUID orderId, UUID clientId) {
+        return orderRepository.findByIdAndClientId(orderId, clientId)
+                .orElseThrow(this::orderNotFound);
+    }
+
+    private OrderResponse toResponse(ShopOrder order) {
+        return new OrderResponse(
+                order.getId(),
+                toResponse(order.getClient()),
+                order.getShippingAddress() == null ? null : toResponse(order.getShippingAddress()),
+                order.getShippingMethod() == null ? null : toResponse(order.getShippingMethod()),
+                order.getOrderStatus() == null ? null : toResponse(order.getOrderStatus()),
+                order.getOrderDate(),
+                order.getOrderTotal()
+        );
+    }
+
+    private ClientResponse toResponse(Client client) {
+        return new ClientResponse(
+                client.getId(),
+                client.getEmail(),
+                client.getFirstName(),
+                client.getLastName(),
+                client.getPhoneNumber(),
+                client.getRole()
+        );
+    }
+
+    private AddressResponse toResponse(Address address) {
+        return new AddressResponse(
+                address.getId(),
+                address.getCity(),
+                address.getRegion(),
+                address.getPostalCode(),
+                address.getStreetNumber(),
+                address.getFlat()
+        );
+    }
+
+    private ShippingMethodResponse toResponse(ShippingMethod shippingMethod) {
+        return new ShippingMethodResponse(
+                shippingMethod.getId(),
+                shippingMethod.getName(),
+                shippingMethod.getPrice()
+        );
+    }
+
+    private OrderStatusResponse toResponse(OrderStatus status) {
+        return new OrderStatusResponse(status.getId(), status.getName());
     }
 
     private ResourceNotFoundException orderNotFound() {

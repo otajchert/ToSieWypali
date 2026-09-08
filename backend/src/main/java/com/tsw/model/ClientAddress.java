@@ -1,7 +1,5 @@
 package com.tsw.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.UUID;
 
@@ -12,13 +10,11 @@ public class ClientAddress {
     @EmbeddedId
     private ClientAddressId id;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("clientId")
     @JoinColumn(name = "client_id")
     private Client client;
 
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.EAGER)
     @MapsId("addressId")
     @JoinColumn(name = "address_id")

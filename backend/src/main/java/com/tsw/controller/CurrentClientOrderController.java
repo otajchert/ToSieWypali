@@ -3,7 +3,7 @@ package com.tsw.controller;
 import com.tsw.config.AuthenticatedClient;
 import com.tsw.dto.OrderItemDto;
 import com.tsw.dto.OrderRequest;
-import com.tsw.model.ShopOrder;
+import com.tsw.dto.OrderResponse;
 import com.tsw.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -29,13 +29,13 @@ public class CurrentClientOrderController {
     }
 
     @GetMapping
-    public List<ShopOrder> getAll(@AuthenticationPrincipal AuthenticatedClient client) {
+    public List<OrderResponse> getAll(@AuthenticationPrincipal AuthenticatedClient client) {
         return orderService.findByClient(client.id());
     }
 
     @GetMapping("/{orderId}")
-    public ShopOrder getById(@AuthenticationPrincipal AuthenticatedClient client,
-                             @PathVariable UUID orderId) {
+    public OrderResponse getById(@AuthenticationPrincipal AuthenticatedClient client,
+                                 @PathVariable UUID orderId) {
         return orderService.getByIdForClient(orderId, client.id());
     }
 
@@ -46,8 +46,8 @@ public class CurrentClientOrderController {
     }
 
     @PostMapping
-    public ResponseEntity<ShopOrder> create(@AuthenticationPrincipal AuthenticatedClient client,
-                                             @Valid @RequestBody OrderRequest request) {
+    public ResponseEntity<OrderResponse> create(@AuthenticationPrincipal AuthenticatedClient client,
+                                                @Valid @RequestBody OrderRequest request) {
         return ResponseEntity.ok(orderService.create(client.id(), request));
     }
 }

@@ -1,8 +1,8 @@
 package com.tsw.controller;
 
 import com.tsw.dto.OrderItemDto;
+import com.tsw.dto.OrderResponse;
 import com.tsw.dto.UpdateOrderStatusRequest;
-import com.tsw.model.ShopOrder;
 import com.tsw.service.OrderService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,12 +26,12 @@ public class OrderController {
     }
 
     @GetMapping
-    public List<ShopOrder> getAll() {
+    public List<OrderResponse> getAll() {
         return orderService.findAll();
     }
 
     @GetMapping("/{id}")
-    public ShopOrder getById(@PathVariable UUID id) {
+    public OrderResponse getById(@PathVariable UUID id) {
         return orderService.getById(id);
     }
 
@@ -41,8 +41,8 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/status")
-    public ShopOrder updateStatus(@PathVariable UUID id,
-                                  @Valid @RequestBody UpdateOrderStatusRequest request) {
+    public OrderResponse updateStatus(@PathVariable UUID id,
+                                      @Valid @RequestBody UpdateOrderStatusRequest request) {
         return orderService.updateStatus(id, request.statusId());
     }
 }

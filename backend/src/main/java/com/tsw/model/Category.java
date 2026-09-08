@@ -1,6 +1,5 @@
 package com.tsw.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.UUID;
 
@@ -15,7 +14,6 @@ public class Category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_category_id")
-    @JsonIgnore
     private Category parentCategory;
 
     @Column(name = "category_name", length = 100, nullable = false)
