@@ -1,6 +1,7 @@
 package com.tsw.service;
 
 import com.tsw.dto.CategoryRequest;
+import com.tsw.dto.CategoryResponse;
 import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.CategoryNotEmptyException;
 import com.tsw.exception.InvalidCategoryHierarchyException;
@@ -28,32 +29,35 @@ public class CategoryService {
         this.productRepository = productRepository;
     }
 
-    public List<Category> findAll() {
-        return categoryRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<CategoryResponse> findAll() {
+        return categoryRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Category getById(UUID id) {
-        return categoryRepository.findById(id)
-                .orElseThrow(this::categoryNotFound);
+    @Transactional(readOnly = true)
+    public CategoryResponse getById(UUID id) {
+        return toResponse(getCategory(id));
     }
 
     @Transactional
-    public Category create(CategoryRequest req) {
+    public CategoryResponse create(CategoryRequest req) {
         Category category = new Category();
         applyRequest(category, req);
-        return categoryRepository.save(category);
+        return toResponse(categoryRepository.save(category));
     }
 
     @Transactional
-    public Category update(UUID id, CategoryRequest req) {
-        Category category = getById(id);
+    public CategoryResponse update(UUID id, CategoryRequest req) {
+        Category category = getCategory(id);
         applyRequest(category, req);
-        return categoryRepository.save(category);
+        return toResponse(categoryRepository.save(category));
     }
 
     @Transactional
     public void delete(UUID id, boolean force) {
-        Category category = getById(id);
+        Category category = getCategory(id);
         long productCount = productRepository.countByCategoryId(id);
         if (!force && productCount > 0) {
             throw new CategoryNotEmptyException(productCount);
@@ -76,6 +80,15 @@ public class CategoryService {
         } else {
             category.setParentCategory(null);
         }
+    }
+
+    private Category getCategory(UUID id) {
+        return categoryRepository.findById(id)
+                .orElseThrow(this::categoryNotFound);
+    }
+
+    private CategoryResponse toResponse(Category category) {
+        return new CategoryResponse(category.getId(), category.getCategoryName());
     }
 
     private ResourceNotFoundException categoryNotFound() {

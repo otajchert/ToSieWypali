@@ -1,9 +1,9 @@
 package com.tsw.controller;
 
 import com.tsw.dto.ImageUrlRequest;
+import com.tsw.dto.ProductImageResponse;
 import com.tsw.dto.ProductRequest;
-import com.tsw.model.Product;
-import com.tsw.model.ProductImage;
+import com.tsw.dto.ProductResponse;
 import com.tsw.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -32,22 +32,22 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<Product> getAll() {
+    public List<ProductResponse> getAll() {
         return productService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Product getById(@PathVariable UUID id) {
+    public ProductResponse getById(@PathVariable UUID id) {
         return productService.getById(id);
     }
 
     @PostMapping
-    public Product create(@Valid @RequestBody ProductRequest request) {
+    public ProductResponse create(@Valid @RequestBody ProductRequest request) {
         return productService.create(request);
     }
 
     @PutMapping("/{id}")
-    public Product update(@PathVariable UUID id, @Valid @RequestBody ProductRequest request) {
+    public ProductResponse update(@PathVariable UUID id, @Valid @RequestBody ProductRequest request) {
         return productService.update(id, request);
     }
 
@@ -58,8 +58,8 @@ public class ProductController {
     }
 
     @PostMapping("/{id}/images")
-    public ProductImage addImage(@PathVariable UUID id,
-                                 @RequestParam("file") MultipartFile file) {
+    public ProductImageResponse addImage(@PathVariable UUID id,
+                                         @RequestParam("file") MultipartFile file) {
         return productService.addGalleryImage(id, file);
     }
 
@@ -71,26 +71,26 @@ public class ProductController {
     }
 
     @PostMapping("/{id}/photo-url")
-    public Product linkPhotoUrl(@PathVariable UUID id,
-                                @Valid @RequestBody ImageUrlRequest request) {
+    public ProductResponse linkPhotoUrl(@PathVariable UUID id,
+                                        @Valid @RequestBody ImageUrlRequest request) {
         return productService.linkPhotoUrl(id, request.url());
     }
 
     @PostMapping("/{id}/image-url")
-    public ProductImage linkGalleryUrl(@PathVariable UUID id,
-                                       @Valid @RequestBody ImageUrlRequest request) {
+    public ProductImageResponse linkGalleryUrl(@PathVariable UUID id,
+                                               @Valid @RequestBody ImageUrlRequest request) {
         return productService.linkGalleryUrl(id, request.url());
     }
 
     @PutMapping("/{id}/images/{imageId}/set-main")
-    public Product setImageAsMain(@PathVariable UUID id,
-                                  @PathVariable UUID imageId) {
+    public ProductResponse setImageAsMain(@PathVariable UUID id,
+                                          @PathVariable UUID imageId) {
         return productService.setImageAsMain(id, imageId);
     }
 
     @PostMapping("/{id}/photo")
-    public Product setMainPhoto(@PathVariable UUID id,
-                                @RequestParam("file") MultipartFile file) {
+    public ProductResponse setMainPhoto(@PathVariable UUID id,
+                                        @RequestParam("file") MultipartFile file) {
         return productService.setMainPhoto(id, file);
     }
 }

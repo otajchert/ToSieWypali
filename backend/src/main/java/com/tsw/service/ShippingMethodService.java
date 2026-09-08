@@ -1,6 +1,7 @@
 package com.tsw.service;
 
 import com.tsw.dto.ShippingMethodRequest;
+import com.tsw.dto.ShippingMethodResponse;
 import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.LastShippingMethodException;
 import com.tsw.exception.ResourceNotFoundException;
@@ -23,19 +24,21 @@ public class ShippingMethodService {
     }
 
     @Transactional(readOnly = true)
-    public List<ShippingMethod> findAll() {
+    public List<ShippingMethodResponse> findAll() {
         Sort order = Sort.by(Sort.Direction.ASC, "name")
                 .and(Sort.by(Sort.Direction.ASC, "id"));
-        return shippingMethodRepository.findAllByActiveTrue(order);
+        return shippingMethodRepository.findAllByActiveTrue(order).stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
-    public ShippingMethod create(ShippingMethodRequest request) {
+    public ShippingMethodResponse create(ShippingMethodRequest request) {
         ShippingMethod shippingMethod = new ShippingMethod();
         shippingMethod.setName(request.name().trim());
         shippingMethod.setPrice(request.price());
         shippingMethod.setActive(true);
-        return shippingMethodRepository.save(shippingMethod);
+        return toResponse(shippingMethodRepository.save(shippingMethod));
     }
 
     @Transactional
@@ -56,6 +59,14 @@ public class ShippingMethodService {
         return new ResourceNotFoundException(
                 ApiErrorCode.SHIPPING_METHOD_NOT_FOUND,
                 "Nie znaleziono metody dostawy"
+        );
+    }
+
+    private ShippingMethodResponse toResponse(ShippingMethod shippingMethod) {
+        return new ShippingMethodResponse(
+                shippingMethod.getId(),
+                shippingMethod.getName(),
+                shippingMethod.getPrice()
         );
     }
 }

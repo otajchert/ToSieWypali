@@ -1,6 +1,9 @@
 package com.tsw.service;
 
+import com.tsw.dto.CategoryResponse;
+import com.tsw.dto.ProductImageResponse;
 import com.tsw.dto.ProductRequest;
+import com.tsw.dto.ProductResponse;
 import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.ProductInUseException;
 import com.tsw.exception.ResourceNotFoundException;
@@ -45,31 +48,34 @@ public class ProductService {
         this.storageService = storageService;
     }
 
-    public List<Product> findAll() {
-        return productRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ProductResponse> findAll() {
+        return productRepository.findAll().stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Product getById(UUID id) {
-        return productRepository.findById(id)
-                .orElseThrow(this::productNotFound);
+    @Transactional(readOnly = true)
+    public ProductResponse getById(UUID id) {
+        return toResponse(getProduct(id));
     }
 
-    public Product create(ProductRequest req) {
+    public ProductResponse create(ProductRequest req) {
         Product product = new Product();
         applyRequest(product, req);
         product.setSku("TSW-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-        return productRepository.save(product);
+        return toResponse(productRepository.save(product));
     }
 
-    public Product update(UUID id, ProductRequest req) {
-        Product product = getById(id);
+    public ProductResponse update(UUID id, ProductRequest req) {
+        Product product = getProduct(id);
         applyRequest(product, req);
-        return productRepository.save(product);
+        return toResponse(productRepository.save(product));
     }
 
     @Transactional
     public void delete(UUID id) {
-        Product product = getById(id);
+        Product product = getProduct(id);
         if (orderProductRepository.existsByIdProductId(id)) {
             throw new ProductInUseException();
         }
@@ -83,8 +89,8 @@ public class ProductService {
         productRepository.delete(product);
     }
 
-    public ProductImage addGalleryImage(UUID productId, MultipartFile file) {
-        Product product = getById(productId);
+    public ProductImageResponse addGalleryImage(UUID productId, MultipartFile file) {
+        Product product = getProduct(productId);
 
         String publicUrl = saveFile(file, "products");
 
@@ -98,24 +104,24 @@ public class ProductService {
         image.setSortOrder(nextOrder);
         image.setProduct(product);
 
-        return productImageRepository.save(image);
+        return toResponse(productImageRepository.save(image));
     }
 
     public void removeGalleryImage(UUID productId, UUID imageId) {
-        getById(productId);
+        getProduct(productId);
         ProductImage image = getProductImage(productId, imageId);
         storageService.delete(image.getImageUrl());
         productImageRepository.delete(image);
     }
 
-    public Product linkPhotoUrl(UUID productId, String url) {
-        Product product = getById(productId);
+    public ProductResponse linkPhotoUrl(UUID productId, String url) {
+        Product product = getProduct(productId);
         product.setPhoto(url);
-        return productRepository.save(product);
+        return toResponse(productRepository.save(product));
     }
 
-    public ProductImage linkGalleryUrl(UUID productId, String url) {
-        Product product = getById(productId);
+    public ProductImageResponse linkGalleryUrl(UUID productId, String url) {
+        Product product = getProduct(productId);
         int nextOrder = product.getImages().stream()
                 .mapToInt(ProductImage::getSortOrder)
                 .max()
@@ -124,18 +130,18 @@ public class ProductService {
         image.setImageUrl(url);
         image.setSortOrder(nextOrder);
         image.setProduct(product);
-        return productImageRepository.save(image);
+        return toResponse(productImageRepository.save(image));
     }
 
-    public Product setImageAsMain(UUID productId, UUID imageId) {
-        Product product = getById(productId);
+    public ProductResponse setImageAsMain(UUID productId, UUID imageId) {
+        Product product = getProduct(productId);
         ProductImage image = getProductImage(productId, imageId);
         product.setPhoto(image.getImageUrl());
-        return productRepository.save(product);
+        return toResponse(productRepository.save(product));
     }
 
-    public Product setMainPhoto(UUID productId, MultipartFile file) {
-        Product product = getById(productId);
+    public ProductResponse setMainPhoto(UUID productId, MultipartFile file) {
+        Product product = getProduct(productId);
 
         if (product.getPhoto() != null) {
             storageService.delete(product.getPhoto());
@@ -143,7 +149,7 @@ public class ProductService {
 
         String publicUrl = saveFile(file, "products");
         product.setPhoto(publicUrl);
-        return productRepository.save(product);
+        return toResponse(productRepository.save(product));
     }
 
     private void applyRequest(Product product, ProductRequest req) {
@@ -175,6 +181,46 @@ public class ProductService {
                 : "";
         String objectPath = subdir + "/" + UUID.randomUUID() + ext;
         return storageService.upload(file, objectPath);
+    }
+
+    private Product getProduct(UUID id) {
+        return productRepository.findById(id)
+                .orElseThrow(this::productNotFound);
+    }
+
+    private ProductResponse toResponse(Product product) {
+        Set<CategoryResponse> categories = new LinkedHashSet<>();
+        for (Category category : product.getCategories()) {
+            categories.add(toResponse(category));
+        }
+
+        List<ProductImageResponse> images = product.getImages().stream()
+                .map(this::toResponse)
+                .toList();
+
+        return new ProductResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPhoto(),
+                product.getQtyInStock(),
+                product.getSku(),
+                product.getPrice(),
+                product.getWeight(),
+                product.getHeight(),
+                product.getWidth(),
+                product.getProductLength(),
+                categories,
+                images
+        );
+    }
+
+    private CategoryResponse toResponse(Category category) {
+        return new CategoryResponse(category.getId(), category.getCategoryName());
+    }
+
+    private ProductImageResponse toResponse(ProductImage image) {
+        return new ProductImageResponse(image.getId(), image.getImageUrl(), image.getSortOrder());
     }
 
     private ProductImage getProductImage(UUID productId, UUID imageId) {

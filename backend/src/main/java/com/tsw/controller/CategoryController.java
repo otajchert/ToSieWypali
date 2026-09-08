@@ -1,7 +1,7 @@
 package com.tsw.controller;
 
 import com.tsw.dto.CategoryRequest;
-import com.tsw.model.Category;
+import com.tsw.dto.CategoryResponse;
 import com.tsw.service.CategoryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -29,22 +29,22 @@ public class CategoryController {
     }
 
     @GetMapping
-    public List<Category> getAll() {
+    public List<CategoryResponse> getAll() {
         return categoryService.findAll();
     }
 
     @GetMapping("/{id}")
-    public Category getById(@PathVariable UUID id) {
+    public CategoryResponse getById(@PathVariable UUID id) {
         return categoryService.getById(id);
     }
 
     @PostMapping
-    public Category create(@Valid @RequestBody CategoryRequest request) {
+    public CategoryResponse create(@Valid @RequestBody CategoryRequest request) {
         return categoryService.create(request);
     }
 
     @PutMapping("/{id}")
-    public Category update(@PathVariable UUID id, @Valid @RequestBody CategoryRequest request) {
+    public CategoryResponse update(@PathVariable UUID id, @Valid @RequestBody CategoryRequest request) {
         return categoryService.update(id, request);
     }
 

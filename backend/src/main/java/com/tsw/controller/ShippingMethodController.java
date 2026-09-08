@@ -1,7 +1,7 @@
 package com.tsw.controller;
 
 import com.tsw.dto.ShippingMethodRequest;
-import com.tsw.model.ShippingMethod;
+import com.tsw.dto.ShippingMethodResponse;
 import com.tsw.service.ShippingMethodService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -27,12 +27,12 @@ public class ShippingMethodController {
     }
 
     @GetMapping
-    public List<ShippingMethod> getAll() {
+    public List<ShippingMethodResponse> getAll() {
         return shippingMethodService.findAll();
     }
 
     @PostMapping
-    public ShippingMethod create(@Valid @RequestBody ShippingMethodRequest request) {
+    public ShippingMethodResponse create(@Valid @RequestBody ShippingMethodRequest request) {
         return shippingMethodService.create(request);
     }
 
