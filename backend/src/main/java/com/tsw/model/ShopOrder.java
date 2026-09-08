@@ -36,6 +36,9 @@ public class ShopOrder {
     @Column(name = "order_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal orderTotal;
 
+    @Column(name = "idempotency_key", length = 64, unique = true)
+    private String idempotencyKey;
+
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
     public Client getClient() { return client; }
@@ -50,4 +53,6 @@ public class ShopOrder {
     public void setOrderDate(LocalDateTime orderDate) { this.orderDate = orderDate; }
     public BigDecimal getOrderTotal() { return orderTotal; }
     public void setOrderTotal(BigDecimal orderTotal) { this.orderTotal = orderTotal; }
+    public String getIdempotencyKey() { return idempotencyKey; }
+    public void setIdempotencyKey(String idempotencyKey) { this.idempotencyKey = idempotencyKey; }
 }

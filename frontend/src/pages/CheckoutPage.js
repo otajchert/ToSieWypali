@@ -9,13 +9,14 @@ const imgSrc = url => url && (url.startsWith('http') ? url : `/api/images/${url}
 const formatPrice = value => Number(value).toFixed(2).replace('.', ',');
 
 function CheckoutPage() {
-    const { items, clearCart } = useCart();
+    const { items, refreshCart } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [placedOrderId, setPlacedOrderId] = useState(null);
+    const [idempotencyKey, setIdempotencyKey] = useState(null);
     const [shippingMethods, setShippingMethods] = useState([]);
     const [selectedShippingId, setSelectedShippingId] = useState('');
     const [shippingLoading, setShippingLoading] = useState(true);
@@ -81,6 +82,7 @@ function CheckoutPage() {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${user.token}`,
+                    'Idempotency-Key': idempotencyKey,
                 },
                 body: JSON.stringify(body),
             });
@@ -93,7 +95,7 @@ function CheckoutPage() {
             const order = await res.json();
             setShowConfirm(false);
             setPlacedOrderId(order.id);
-            await clearCart().catch(() => {});
+            await refreshCart();
         } catch (e) {
             setError(e.message || 'Nie udało się złożyć zamówienia.');
             setLoading(false);
@@ -204,7 +206,7 @@ function CheckoutPage() {
 
                             <button
                                 className="btn-place-order"
-                                onClick={() => setShowConfirm(true)}
+                                onClick={() => { setIdempotencyKey(crypto.randomUUID()); setShowConfirm(true); }}
                                 disabled={shippingLoading || !selectedShipping}
                             >
                                 Złóż zamówienie

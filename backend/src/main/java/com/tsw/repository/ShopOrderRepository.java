@@ -20,6 +20,8 @@ public interface ShopOrderRepository extends JpaRepository<ShopOrder, UUID> {
 
     Optional<ShopOrder> findByIdAndClientId(UUID orderId, UUID clientId);
 
+    Optional<ShopOrder> findByClientIdAndIdempotencyKey(UUID clientId, String idempotencyKey);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select shopOrder from ShopOrder shopOrder where shopOrder.id = :orderId")
     Optional<ShopOrder> findByIdForUpdate(@Param("orderId") UUID orderId);

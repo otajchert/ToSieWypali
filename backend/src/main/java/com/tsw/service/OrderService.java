@@ -25,6 +25,7 @@ import com.tsw.model.OrderStatus;
 import com.tsw.model.Product;
 import com.tsw.model.ShippingMethod;
 import com.tsw.model.ShopOrder;
+import com.tsw.repository.CartItemRepository;
 import com.tsw.repository.ClientAddressRepository;
 import com.tsw.repository.ClientRepository;
 import com.tsw.repository.OrderProductRepository;
@@ -32,6 +33,7 @@ import com.tsw.repository.OrderStatusRepository;
 import com.tsw.repository.ProductRepository;
 import com.tsw.repository.ShippingMethodRepository;
 import com.tsw.repository.ShopOrderRepository;
+import com.tsw.repository.ShoppingCartRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,6 +71,8 @@ public class OrderService {
     private final ClientAddressRepository clientAddressRepository;
     private final ShippingMethodRepository shippingMethodRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final ShoppingCartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
 
     public OrderService(ShopOrderRepository orderRepository,
                         OrderProductRepository orderProductRepository,
@@ -76,7 +80,9 @@ public class OrderService {
                         ClientRepository clientRepository,
                         ClientAddressRepository clientAddressRepository,
                         ShippingMethodRepository shippingMethodRepository,
-                        OrderStatusRepository orderStatusRepository) {
+                        OrderStatusRepository orderStatusRepository,
+                        ShoppingCartRepository cartRepository,
+                        CartItemRepository cartItemRepository) {
         this.orderRepository = orderRepository;
         this.orderProductRepository = orderProductRepository;
         this.productRepository = productRepository;
@@ -84,6 +90,8 @@ public class OrderService {
         this.clientAddressRepository = clientAddressRepository;
         this.shippingMethodRepository = shippingMethodRepository;
         this.orderStatusRepository = orderStatusRepository;
+        this.cartRepository = cartRepository;
+        this.cartItemRepository = cartItemRepository;
     }
 
     @Transactional(readOnly = true)
@@ -137,7 +145,15 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse create(UUID clientId, OrderRequest req) {
+    public OrderResponse create(UUID clientId, OrderRequest req, String idempotencyKey) {
+        String key = idempotencyKey == null || idempotencyKey.isBlank() ? null : idempotencyKey;
+        if (key != null) {
+            Optional<ShopOrder> existing = orderRepository.findByClientIdAndIdempotencyKey(clientId, key);
+            if (existing.isPresent()) {
+                return toResponse(existing.get());
+            }
+        }
+
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ApiErrorCode.CLIENT_NOT_FOUND,
@@ -181,6 +197,7 @@ public class OrderService {
         order.setShippingAddress(address);
         order.setShippingMethod(shippingMethod);
         order.setOrderTotal(total);
+        order.setIdempotencyKey(key);
         OrderStatus initialStatus = orderStatusRepository.findById(PLACED_STATUS_ID)
                 .orElseThrow(OrderConfigurationException::new);
         order.setOrderStatus(initialStatus);
@@ -204,6 +221,9 @@ public class OrderService {
             product.setQtyInStock(product.getQtyInStock() - item.qty());
             productRepository.save(product);
         }
+
+        cartRepository.findByClientId(clientId)
+                .ifPresent(cart -> cartItemRepository.deleteAllByCartId(cart.getId()));
 
         return toResponse(order);
     }
