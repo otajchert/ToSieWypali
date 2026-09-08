@@ -1,13 +1,12 @@
-FROM eclipse-temurin:22-jdk-jammy AS build
+FROM maven:3.9-eclipse-temurin-25-noble AS build
 
 WORKDIR /app
-RUN apt-get update && apt-get install -y maven
 COPY pom.xml .
 RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:22-jre-jammy
+FROM eclipse-temurin:25-jre-noble
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 WORKDIR /app

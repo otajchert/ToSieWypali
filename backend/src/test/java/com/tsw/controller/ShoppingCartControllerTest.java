@@ -1,6 +1,6 @@
 package com.tsw.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.tsw.config.JwtUtil;
 import com.tsw.dto.AddCartItemRequest;
 import com.tsw.dto.UpdateCartItemQuantityRequest;
@@ -15,7 +15,7 @@ import com.tsw.repository.ShoppingCartRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

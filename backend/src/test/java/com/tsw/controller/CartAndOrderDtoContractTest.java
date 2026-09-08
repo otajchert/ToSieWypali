@@ -1,7 +1,7 @@
 package com.tsw.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.tsw.config.JwtUtil;
 import com.tsw.dto.AddCartItemRequest;
 import com.tsw.dto.AddressRequest;
@@ -19,7 +19,7 @@ import com.tsw.repository.ProductRepository;
 import com.tsw.repository.ShippingMethodRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -356,7 +356,7 @@ class CartAndOrderDtoContractTest {
 
     private Set<String> fieldNames(JsonNode node) {
         Set<String> names = new HashSet<>();
-        node.fieldNames().forEachRemaining(names::add);
+        names.addAll(node.propertyNames());
         return names;
     }
 }

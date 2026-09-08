@@ -77,6 +77,7 @@ const ERROR_MESSAGES = {
     ORDER_ITEMS_REQUIRED: 'Zamówienie musi zawierać co najmniej jeden produkt.',
     ORDER_ITEM_REQUIRED: 'Pozycja zamówienia jest wymagana.',
     TOO_MANY_ORDER_ITEMS: 'Zamówienie zawiera zbyt wiele produktów.',
+    DUPLICATE_ORDER_ITEM: 'Zamówienie zawiera powtórzony produkt.',
     SHIPPING_METHOD_REQUIRED: 'Wybierz metodę dostawy.',
     SHIPPING_METHOD_NAME_REQUIRED: 'Podaj nazwę metody dostawy.',
     SHIPPING_METHOD_NAME_TOO_LONG: 'Nazwa metody dostawy jest zbyt długa.',

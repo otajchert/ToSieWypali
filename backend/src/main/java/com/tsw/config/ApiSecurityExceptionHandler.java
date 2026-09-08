@@ -1,6 +1,6 @@
 package com.tsw.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.tsw.exception.ApiErrorCode;
 import com.tsw.exception.ApiProblemDetails;
 import jakarta.servlet.ServletException;

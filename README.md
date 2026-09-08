@@ -2,17 +2,17 @@
 
 Small online shop for pottery products
 
-online at:
+visit at:
 tosiewypali.pl
 
 ## Stack
 
-Java 22, Spring Boot, MySQL, React, Docker
+Java 25, Spring Boot, MySQL, React, Docker
 
 ## Requirements
 
 - Running the app: Docker Desktop
-- Running backend tests: JDK 22, Maven 3.9+ and Docker Desktop
+- Running backend tests: JDK 25, Maven 3.9+ and Docker Desktop
 
 ## Run
 

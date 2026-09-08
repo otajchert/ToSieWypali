@@ -3,11 +3,13 @@ package com.tsw.service;
 import com.tsw.dto.AddressResponse;
 import com.tsw.dto.ClientResponse;
 import com.tsw.dto.OrderItemDto;
+import com.tsw.dto.OrderItemRequest;
 import com.tsw.dto.OrderRequest;
 import com.tsw.dto.OrderResponse;
 import com.tsw.dto.OrderStatusResponse;
 import com.tsw.dto.ShippingMethodResponse;
 import com.tsw.exception.ApiErrorCode;
+import com.tsw.exception.DuplicateOrderItemException;
 import com.tsw.exception.InsufficientStockException;
 import com.tsw.exception.InvalidOrderStatusTransitionException;
 import com.tsw.exception.InvalidQuantityException;
@@ -34,6 +36,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -154,17 +159,21 @@ public class OrderService {
                         "Nie znaleziono metody dostawy"
                 ));
 
+        List<OrderItemRequest> items = sortedUniqueItems(req.items());
+
+        Map<UUID, Product> products = new HashMap<>();
         BigDecimal total = shippingMethod.getPrice();
-        for (var item : req.items()) {
+        for (OrderItemRequest item : items) {
             if (item.qty() == null || item.qty() <= 0) {
                 throw new InvalidQuantityException("Ilość musi być większa od zera");
             }
-            Product product = productRepository.findById(item.productId())
-                    .orElseThrow(() -> productNotFound());
+            Product product = productRepository.findByIdForUpdate(item.productId())
+                    .orElseThrow(this::productNotFound);
             if (product.getQtyInStock() < item.qty()) {
                 throw new InsufficientStockException("Niewystarczająca ilość produktu: " + product.getName());
             }
             total = total.add(product.getPrice().multiply(BigDecimal.valueOf(item.qty())));
+            products.put(product.getId(), product);
         }
 
         ShopOrder order = new ShopOrder();
@@ -177,9 +186,8 @@ public class OrderService {
         order.setOrderStatus(initialStatus);
         order = orderRepository.save(order);
 
-        for (var itemRequest : req.items()) {
-            Product product = productRepository.findById(itemRequest.productId())
-                    .orElseThrow(() -> productNotFound());
+        for (OrderItemRequest item : items) {
+            Product product = products.get(item.productId());
 
             OrderProductId opId = new OrderProductId();
             opId.setOrderId(order.getId());
@@ -189,11 +197,11 @@ public class OrderService {
             op.setId(opId);
             op.setOrder(order);
             op.setProduct(product);
-            op.setQty(itemRequest.qty());
+            op.setQty(item.qty());
             op.setPrice(product.getPrice());
             orderProductRepository.save(op);
 
-            product.setQtyInStock(product.getQtyInStock() - itemRequest.qty());
+            product.setQtyInStock(product.getQtyInStock() - item.qty());
             productRepository.save(product);
         }
 
@@ -224,6 +232,18 @@ public class OrderService {
 
         order.setOrderStatus(status);
         return toResponse(orderRepository.save(order));
+    }
+
+    private List<OrderItemRequest> sortedUniqueItems(List<OrderItemRequest> items) {
+        Set<UUID> productIds = new HashSet<>();
+        for (OrderItemRequest item : items) {
+            if (!productIds.add(item.productId())) {
+                throw new DuplicateOrderItemException();
+            }
+        }
+        return items.stream()
+                .sorted(Comparator.comparing(OrderItemRequest::productId))
+                .toList();
     }
 
     private ShopOrder getOrder(UUID id) {

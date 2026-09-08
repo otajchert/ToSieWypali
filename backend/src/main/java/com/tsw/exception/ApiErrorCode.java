@@ -6,6 +6,7 @@ public enum ApiErrorCode {
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation failed"),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),
     INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "Invalid quantity"),
+    DUPLICATE_ORDER_ITEM(HttpStatus.BAD_REQUEST, "Duplicate order item"),
     INVALID_CATEGORY_HIERARCHY(HttpStatus.BAD_REQUEST, "Invalid category hierarchy"),
     NOT_ACCEPTABLE(HttpStatus.NOT_ACCEPTABLE, "Not acceptable"),
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, "Method not allowed"),
